@@ -1,0 +1,23 @@
+package org.a4z0.lwjgl.demo.voxel.geometry;
+
+/**
+* ...
+*/
+
+public class Ray {
+
+    /**
+    * Construct a {@link Ray}.
+    *
+    * @param x ...
+    * @param y ...
+    * @param z ...
+    * @param dx ...
+    * @param dy ...
+    * @param dz ...
+    */
+
+    public Ray(float x, float y, float z, float dx, float dy, float dz) {
+
+    }
+}
