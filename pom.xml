@@ -6,7 +6,7 @@
 
     <groupId>org.a4z0</groupId>
     <artifactId>voxel-lwjgl</artifactId>
-    <version>24w14a</version>
+    <version>24w14b</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
