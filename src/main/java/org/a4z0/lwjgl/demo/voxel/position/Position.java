@@ -59,13 +59,13 @@ public class Position {
     /**
     * Calculates the distance between this and the other {@link Position}.
     *
-    * @param other Other {@link Position}.
+    * @param o Other {@link Position}.
     *
     * @return the distance between positions.
     */
 
-    public int distance(Position other) {
-        return this.distance(other.getX(), other.getY(), other.getZ());
+    public int distance(Position o) {
+        return this.distance(o.getX(), o.getY(), o.getZ());
     }
 
     /**

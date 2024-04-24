@@ -51,6 +51,18 @@ public class VertexArrayObject {
     }
 
     /**
+    * ...
+    *
+    * @param glMode ...
+    * @param glFirst ...
+    * @param glCount ...
+    */
+
+    public void drawArrays(int glMode, int glFirst, int glCount) {
+        glDrawArrays(glMode, glFirst, glCount);
+    }
+
+    /**
     * Points out the format of the attribute data in the current context.
     *
     * @param glIndex Index of the Attribute.

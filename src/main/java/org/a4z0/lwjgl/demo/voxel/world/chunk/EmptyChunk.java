@@ -1,47 +1,45 @@
 package org.a4z0.lwjgl.demo.voxel.world.chunk;
 
-import org.a4z0.lwjgl.demo.voxel.palette.Palette;
 import org.a4z0.lwjgl.demo.voxel.position.ChunkPosition;
 import org.a4z0.lwjgl.demo.voxel.world.World;
 import org.a4z0.lwjgl.demo.voxel.voxel.Voxel;
 
 /**
-* Represents a Chunk.
-* Section of the {@link World} that can be loaded or unloaded.
+* Represents an Empty Chunk.
+* Contains only its coordinates and the {@link World} where it resides.
+*
+* <br>
+*
+* It should only be used when outside the {@link World}'s boundaries.
 */
 
-public class Chunk implements IChunk {
+public class EmptyChunk implements IChunk {
 
     protected final World world;
     protected final ChunkPosition position;
-    protected final Palette<Voxel> palette;
 
     /**
-    * Construct a {@link Chunk}.
+    * Construct a {@link EmptyChunk}.
     *
-    * @param world {@link World} that this {@link Chunk} is.
+    * @param world {@link World} that this {@link EmptyChunk} is.
     * @param x X-Axis.
     * @param z Z-Axis.
-    * @param palette ...
     */
 
-    public Chunk(World world, int x, int z, Palette<Voxel> palette) {
-        this(world, new ChunkPosition(x, z), palette);
+    public EmptyChunk(World world, int x, int z) {
+        this(world, new ChunkPosition(x, z));
     }
 
     /**
-    * Construct a {@link Chunk}.
+    * Construct a {@link EmptyChunk}.
     *
-    * @param world {@link World} that this {@link Chunk} is.
-    * @param position {@link ChunkPosition} that this {@link Chunk} is.
-    * @param palette ...
+    * @param world {@link World} that this {@link EmptyChunk} is.
+    * @param position {@link ChunkPosition} that this {@link EmptyChunk} is.
     */
 
-    public Chunk(World world, ChunkPosition position, Palette<Voxel> palette) {
+    public EmptyChunk(World world, ChunkPosition position) {
         this.world = world;
         this.position = position;
-        this.palette = new Palette<>(CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z);
-        this.palette.fill(Voxel.EMPTY_VOXEL);
     }
 
     @Override
@@ -61,12 +59,12 @@ public class Chunk implements IChunk {
 
     @Override
     public void setVoxel(int x, int y, int z, Voxel voxel) {
-        this.palette.set(x, y, z, voxel);
+
     }
 
     @Override
     public Voxel getVoxel(int x, int y, int z) {
-        return this.palette.get(x, y, z);
+        return Voxel.EMPTY_VOXEL;
     }
 
     @Override

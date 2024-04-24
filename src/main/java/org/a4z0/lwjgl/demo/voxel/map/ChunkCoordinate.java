@@ -1,7 +1,5 @@
 package org.a4z0.lwjgl.demo.voxel.map;
 
-import org.a4z0.lwjgl.demo.voxel.world.chunk.Chunk;
-
 public class ChunkCoordinate {
 
     public static final long BINARY_MASK_X = 4194303L;
@@ -43,6 +41,6 @@ public class ChunkCoordinate {
     */
 
     public static long asLongFromBlock(int x, int y, int z) {
-        return asLong(x >> Chunk.CHUNK_SIZE_X_SQRT, y >> Chunk.CHUNK_SIZE_Y_SQRT, z >> Chunk.CHUNK_SIZE_Z_SQRT);
+        return asLong(x >> 4, y >> 4, z >> 4);
     }
 }

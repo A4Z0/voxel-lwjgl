@@ -1,11 +1,12 @@
 package org.a4z0.lwjgl.demo.voxel.world;
 
-import org.a4z0.lwjgl.demo.voxel.map.ChunkCoordinate;
-import org.a4z0.lwjgl.demo.voxel.world.chunk.Chunk;
-import org.a4z0.lwjgl.demo.voxel.world.chunk.LoadedChunk;
-import org.a4z0.lwjgl.demo.voxel.world.chunk.UnloadedChunk;
+import org.a4z0.lwjgl.demo.voxel.position.ChunkPosition;
+import org.a4z0.lwjgl.demo.voxel.voxel.Voxel;
+import org.a4z0.lwjgl.demo.voxel.world.chunk.IChunk;
+import org.a4z0.lwjgl.demo.voxel.world.chunk.EmptyChunk;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -15,7 +16,7 @@ import java.util.Optional;
 public class Overworld implements World {
 
     protected final long seed;
-    protected final HashMap<Long, Chunk> chunks = new HashMap<>();
+    protected final Map<Long, IChunk> chunks = new HashMap<>();
 
     /**
     * Construct a {@link Overworld}.
@@ -26,13 +27,42 @@ public class Overworld implements World {
     public Overworld(long seed) {
         this.seed = seed;
 
-        for(int x = -CHUNKS_PER_DIRECTION; x <= CHUNKS_PER_DIRECTION; x++) {
-            for(int z = -CHUNKS_PER_DIRECTION; z <= CHUNKS_PER_DIRECTION; z++) {
-                Chunk chunk = new LoadedChunk(this, x * Chunk.CHUNK_SIZE_X, z * Chunk.CHUNK_SIZE_Z);
+        /*new Thread(() -> {
 
-                this.chunks.put(ChunkCoordinate.asLongFromBlock(chunk.getX(), 0, chunk.getZ()), chunk);
+            AtomicInteger lastX = new AtomicInteger(0);
+            AtomicInteger lastZ = new AtomicInteger(0);
+
+           while(true) {
+                Location Pos = VoxelGameLWJGL.CAMERA.getPosition();
+
+                if(lastX.get() != Pos.getBlockX() || lastZ.get() != Pos.getBlockZ()) {
+                    for (int x = -8; x <= 8; x++) {
+                        for (int z = -8; z <= 8; z++) {
+                            int nX = (x * 16) + Pos.getBlockX();
+                            int nZ = (z * 16) + Pos.getBlockZ();
+
+                            Chunk chunk = this.getChunkAt(nX, nZ);
+
+                            synchronized (this.chunks) {
+                                if (chunk instanceof UnloadedChunk)
+                                    this.chunks.put(ChunkCoordinate.asLongFromBlock(nX, 0, nZ), new LoadedChunk(this, nX, nZ));
+                            }
+                        }
+                    }
+                }
+
+                lastX.set(Pos.getBlockX());
+                lastZ.set(Pos.getBlockZ());
+           }
+        }).start();*/
+
+        /*for(int x = -CHUNKS_PER_DIRECTION; x <= CHUNKS_PER_DIRECTION; x++) {
+            for(int z = -CHUNKS_PER_DIRECTION; z <= CHUNKS_PER_DIRECTION; z++) {
+                Chunk chunk = new WorldChunk(this, x * Chunk.CHUNK_SIZE_X, z * Chunk.CHUNK_SIZE_Z, null);
+
+                this.chunks.put(ChunkPosition.asBlock(chunk.getX(), chunk.getZ()), chunk);
             }
-        }
+        }*/
     }
 
     @Override
@@ -41,22 +71,24 @@ public class Overworld implements World {
     }
 
     @Override
-    public Chunk getChunkAt(int x, int z) {
-        return Optional.ofNullable(this.chunks.get(ChunkCoordinate.asLongFromBlock(x, 0, z))).orElse(new UnloadedChunk(this, x, 0, z));
+    public IChunk getChunkAt(int x, int z) {
+        return Optional.ofNullable(this.chunks.get(ChunkPosition.asBlock(x, z))).orElse(new EmptyChunk(this, x, z));
     }
 
     @Override
-    public Chunk[] getChunks() {
-        return this.chunks.values().toArray(new Chunk[0]);
+    public IChunk[] getChunks() {
+        synchronized (this.chunks) {
+            return this.chunks.values().toArray(new IChunk[0]);
+        }
     }
 
     @Override
-    public void setVoxel(int x, int y, int z, int r, int g, int b, int a, boolean u) {
-        this.getChunkAt(x, z).setVoxel(x, y, z, r, g, b, a, u);
+    public void setVoxel(int x, int y, int z, Voxel voxel) {
+        this.getChunkAt(x, z).setVoxel(x, y, z, voxel);
     }
 
     @Override
-    public int getVoxel(int x, int y, int z) {
+    public Voxel getVoxel(int x, int y, int z) {
         return this.getChunkAt(x, z).getVoxel(x, y, z);
     }
 }

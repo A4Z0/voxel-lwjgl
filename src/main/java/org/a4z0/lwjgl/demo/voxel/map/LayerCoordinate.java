@@ -1,6 +1,6 @@
 package org.a4z0.lwjgl.demo.voxel.map;
 
-import org.a4z0.lwjgl.demo.voxel.world.chunk.layer.Layer;
+import org.a4z0.lwjgl.demo.voxel.world.pipeline.IPipeline;
 
 public class LayerCoordinate {
 
@@ -43,6 +43,6 @@ public class LayerCoordinate {
     */
 
     public static long asLongFromBlock(int x, int y, int z) {
-        return asLong(x >> Layer.LAYER_SIZE_X_SQRT, y >> Layer.LAYER_SIZE_Y_SQRT, z >> Layer.LAYER_SIZE_Z_SQRT);
+        return asLong(x >> IPipeline.LAYER_SIZE_X_BIT_SHIFT, y >> IPipeline.LAYER_SIZE_Y_BIT_SHIFT, z >> IPipeline.LAYER_SIZE_Z_BIT_SHIFT);
     }
 }

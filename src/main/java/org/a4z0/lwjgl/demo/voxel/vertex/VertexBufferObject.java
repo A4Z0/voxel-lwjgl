@@ -7,7 +7,7 @@ import java.nio.ShortBuffer;
 import static org.lwjgl.opengl.GL30.*;
 
 /**
-* Represents a Vertex Array Object.
+* Represents a Vertex Buffer Object.
 */
 
 public class VertexBufferObject {

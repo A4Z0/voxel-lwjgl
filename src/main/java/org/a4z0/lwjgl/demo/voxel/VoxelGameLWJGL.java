@@ -10,14 +10,12 @@ import org.a4z0.lwjgl.demo.voxel.render.VoxelRenderer;
 import org.a4z0.lwjgl.demo.voxel.shader.pre.VGShaders;
 import org.a4z0.lwjgl.demo.voxel.window.Window;
 import org.a4z0.lwjgl.demo.voxel.world.Overworld;
-import org.a4z0.lwjgl.demo.voxel.world.chunk.Chunk;
-import org.a4z0.lwjgl.demo.voxel.world.chunk.layer.Layer;
-import org.a4z0.lwjgl.demo.voxel.world.World;
+import org.a4z0.lwjgl.demo.voxel.world.chunk.IChunk;
+import org.a4z0.lwjgl.demo.voxel.world.chunk.provider.IChunkProvider;
+import org.a4z0.lwjgl.demo.voxel.world.chunk.provider.ChunkProvider;
+import org.a4z0.lwjgl.demo.voxel.world.pipeline.IPipeline;
+import org.a4z0.lwjgl.demo.voxel.world.pipeline.Pipeline;
 import org.joml.Matrix4f;
-import org.joml.Random;
-import org.joml.Vector3f;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -33,7 +31,8 @@ public class VoxelGameLWJGL {
     public static Camera CAMERA;
     public static ObjectCameraController CAMERA_CONTROLLER;
 
-    public static World WORLD;
+    public static IChunkProvider CHUNK_PROVIDER;
+    public static IPipeline PIPELINE;
 
     public static VoxelRenderer VOXEL_RENDERER;
     public static OutlineRenderer OUTLINE_RENDERER;
@@ -71,33 +70,20 @@ public class VoxelGameLWJGL {
         VOXEL_RENDERER = new VoxelRenderer();
         OUTLINE_RENDERER = new OutlineRenderer();
 
-        // World
-        WORLD = new Overworld(Random.newSeed());
+        // Chunk Provider
+        CHUNK_PROVIDER = new ChunkProvider(new Overworld(0));
 
-        AtomicBoolean ready = new AtomicBoolean(false);
-
-        new Thread(() -> {
-            for(int x = -(8 * 16); x < (8 * 16); x++) {
-                for(int y = 0; y < (8 * 16); y++) {
-                    for(int z = -(8 * 16); z < (8 * 16); z++) {
-                        WORLD.setVoxel(x, y, z, x * 4, y * 4, z * 4);
-                    }
+        for(int x = 0; x < 16; x++) {
+            for(int y = 0; y < 16; y++) {
+                for(int z = 0; z < 16; z++) {
+                    CHUNK_PROVIDER.getChunkAt(x, z).setVoxel(x, y, z, x * 4, y * 4, z * 4);
                 }
             }
+        }
 
-            ready.set(true);
-        }).start();
-
-        new Thread(() -> {
-            while (!ready.get());
-
-            for (Chunk chunk : WORLD.getChunks()) {
-                for (Layer layer : chunk.getLayers()) {
-                    if(layer != null)
-                        layer.delete(true);
-                }
-            }
-        }).start();
+        // Pipeline
+        PIPELINE = new Pipeline(CHUNK_PROVIDER, 0, 0, 0);
+        boolean PIPELINE_CALLED = false;
 
         // Default
         glEnable(GL_BLEND);
@@ -106,8 +92,8 @@ public class VoxelGameLWJGL {
         glEnable(GL_DEPTH_TEST);
         glClearDepth(1f);
         glDepthFunc(GL_LEQUAL);
-        //glEnable(GL_CULL_FACE);
-        //glCullFace(GL_BACK);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
         glLineWidth(1f);
 
         // Loop
@@ -138,44 +124,50 @@ public class VoxelGameLWJGL {
             VGShaders.VOXEL_SHADER_PROGRAM.bind();
             VGShaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_projection", Projection);
             VGShaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_view", View);
+
+            /*int[] Looking = getBlockAt(Position, 5);
+
+            if(Looking != null) {
+                if(Input.isButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
+                    CHUNK_PROVIDER.getChunkAt(Looking[0], Looking[2]).setVoxel(Looking[0], Looking[1], Looking[2], 0, 0, 0, 0, true);
+                }
+
+                OUTLINE_RENDERER.render(OutlineRenderer.VOXEL_BOUNDARIES, Looking[0], Looking[1], Looking[2], 0, 0, 0, 1f, 1f);
+            }
+
+            for(IChunk chunk : CHUNK_PROVIDER.getChunks()) {
+                if(chunk == null)
+                    continue;
+
+                /*for(Layer layer : chunk.getLayerProvider().getLayers()) {
+                    layer.update(System.nanoTime());
+                    layer.render();
+                }
+            }*/
+
+
+            PIPELINE.update();
+            PIPELINE.render();
+
             VGShaders.VOXEL_SHADER_PROGRAM.unbind();
 
             VGShaders.OUTLINE_SHADER_PROGRAM.bind();
             VGShaders.OUTLINE_SHADER_PROGRAM.setUniform4fv("camera_projection", Projection);
             VGShaders.OUTLINE_SHADER_PROGRAM.setUniform4fv("camera_view", View);
-            VGShaders.OUTLINE_SHADER_PROGRAM.unbind();
-
-            for(Chunk chunk : WORLD.getChunks()) {
-                for(Layer layer : chunk.getLayers()) {
-                    if(layer == null)
-                        continue;
-
-                    layer.update(System.nanoTime());
-                    layer.render();
-                }
-            }
-
-            int[] Looking = getBlockAt(Position, 5);
-
-            if(Looking != null) {
-                if(Input.isButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
-                    WORLD.setVoxel(Looking[0], Looking[1], Looking[2], 0, 0, 0, 0, true);
-                }
-
-                OUTLINE_RENDERER.render(OutlineRenderer.VOXEL_BOUNDARIES, Looking[0], Looking[1], Looking[2], 0, 0, 0, 1f, 1f);
-            }
 
             // Chunk Debugging (Ctrl+G)
             if(Input.isKeyDown(GLFW_KEY_LEFT_CONTROL) && Input.isKeyPressed(GLFW_KEY_G))
                 DEBUG_CHUNK = !DEBUG_CHUNK;
 
             if(DEBUG_CHUNK) {
-                Chunk chunk = WORLD.getChunkAt(Position.getBlockX(), Position.getBlockZ());
+                IChunk chunk = CHUNK_PROVIDER.getChunkAt(Position.getBlockX(), Position.getBlockZ());
 
                 WINDOW.setTitle("Chunk - X: " + chunk.getX() + ", Z: " + chunk.getZ() + " -> " + chunk.getClass().getSimpleName());
 
                 OUTLINE_RENDERER.render(chunk, 1f, 1f, 0, 1f, 1f);
             }
+
+            VGShaders.OUTLINE_SHADER_PROGRAM.bind();
 
             // Window Update
             WINDOW.update();
@@ -185,7 +177,7 @@ public class VoxelGameLWJGL {
         System.exit(0);
     }
 
-    public static int[] getBlockAt(Location Position, int Range) {
+    /*public static int[] getBlockAt(Location Position, int Range) {
         Vector3f Dir = Position.getDirection();
 
         for(int i = 0; i <= Range; i++) {
@@ -193,10 +185,10 @@ public class VoxelGameLWJGL {
             int Y = Math.round((Position.getY() + Dir.y * i));
             int Z = Math.round((Position.getZ() + Dir.z * i));
 
-            if(WORLD.getVoxel(X, Y, Z) != 0)
+            if(CHUNK_PROVIDER.getChunkAt(X, Z).getVoxel(X, Y, Z) != 0)
                 return new int[]{X, Y, Z};
         }
 
         return null;
-    }
+    }*/
 }

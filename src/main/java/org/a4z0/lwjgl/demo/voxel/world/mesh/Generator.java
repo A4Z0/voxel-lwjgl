@@ -1,7 +1,7 @@
-package org.a4z0.lwjgl.demo.voxel.voxel;
+package org.a4z0.lwjgl.demo.voxel.world.mesh;
 
 import org.a4z0.lwjgl.demo.voxel.position.Direction;
-import org.a4z0.lwjgl.demo.voxel.vertex.stream.VertexStream;
+import org.a4z0.lwjgl.demo.voxel.vertex.VertexStream;
 
 /**
 * ...
