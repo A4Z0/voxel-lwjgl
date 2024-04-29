@@ -1,6 +1,6 @@
 package org.a4z0.lwjgl.demo.voxel.camera;
 
-import org.a4z0.lwjgl.demo.voxel.input.Input;
+import org.a4z0.lwjgl.demo.voxel.gl.input.Input;
 import org.a4z0.lwjgl.demo.voxel.position.Location;
 import org.joml.Vector3f;
 
@@ -34,7 +34,7 @@ public class ObjectCameraController {
 
     public ObjectCameraController(Camera Camera) {
         this.Camera = Camera;
-        this.Position = Camera.getPosition();
+        this.Position = Camera.getLocation();
     }
 
     /**
@@ -42,7 +42,7 @@ public class ObjectCameraController {
     */
 
     public void onKeyboard() {
-        Vector3f Direction = this.Camera.getPosition().getDirection();
+        Vector3f Direction = this.Camera.getLocation().getDirection();
 
         Vector3f HorizontalDirection = new Vector3f(Direction.x, 0, Direction.z).normalize();
 

@@ -1,9 +1,7 @@
 package org.a4z0.lwjgl.demo.voxel.position;
 
 /**
-* Represents a {@link Position} in a three-dimensional space.
-*
-* @see Location
+* Represents a position in a three-dimensional space.
 */
 
 public class Position {
@@ -26,7 +24,7 @@ public class Position {
     * @param z Z-Axis.
     */
 
-    public Position(int x, int y, int z) {
+    public Position(final int x, final int y, final int z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -69,13 +67,13 @@ public class Position {
     }
 
     /**
-    * Calculates the distance between this {@link Position} and the coordinate.
+    * Calculates the distance between this {@link Position} and the coordinates.
     *
     * @param x X-Axis.
     * @param y Y-Axis.
     * @param z Z-Axis.
     *
-    * @return the distance between positions.
+    * @return the distance between this position and the coordinates.
     */
 
     public int distance(int x, int y, int z) {

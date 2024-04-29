@@ -46,7 +46,7 @@ public class FreeCamera implements Camera {
     }
 
     @Override
-    public Location getPosition() {
+    public Location getLocation() {
         return this.position;
     }
 

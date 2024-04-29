@@ -21,7 +21,7 @@ public interface Camera {
     * @return the {@link Camera} {@link Location}.
     */
 
-    Location getPosition();
+    Location getLocation();
 
     /**
     * @return the {@link Camera} Projection {@link Matrix4f Matrix}.

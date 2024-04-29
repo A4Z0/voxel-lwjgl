@@ -1,6 +1,6 @@
 package org.a4z0.lwjgl.demo.voxel.position;
 
-import org.a4z0.lwjgl.demo.voxel.world.pipeline.IPipeline;
+import org.a4z0.lwjgl.demo.voxel.pipeline.IPipeline;
 
 /**
 * ...

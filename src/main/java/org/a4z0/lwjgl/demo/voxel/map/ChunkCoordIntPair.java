@@ -1,6 +1,6 @@
 package org.a4z0.lwjgl.demo.voxel.map;
 
-import org.a4z0.lwjgl.demo.voxel.world.chunk.IChunk;
+import org.a4z0.lwjgl.demo.voxel.chunk.Chunk;
 
 public class ChunkCoordIntPair {
 
@@ -12,6 +12,6 @@ public class ChunkCoordIntPair {
     }
 
     public static long asLongBlock(int x, int z) {
-        return asLong(x >> IChunk.CHUNK_SIZE_X_BIT_SHIFT, z >> IChunk.CHUNK_SIZE_Z_BIT_SHIFT);
+        return asLong(x >> Chunk.CHUNK_SIZE_X_BIT_SHIFT, z >> Chunk.CHUNK_SIZE_Z_BIT_SHIFT);
     }
 }

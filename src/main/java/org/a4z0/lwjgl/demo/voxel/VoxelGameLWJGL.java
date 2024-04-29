@@ -3,18 +3,18 @@ package org.a4z0.lwjgl.demo.voxel;
 import org.a4z0.lwjgl.demo.voxel.camera.Camera;
 import org.a4z0.lwjgl.demo.voxel.camera.FreeCamera;
 import org.a4z0.lwjgl.demo.voxel.camera.ObjectCameraController;
-import org.a4z0.lwjgl.demo.voxel.input.Input;
+import org.a4z0.lwjgl.demo.voxel.gl.input.Input;
 import org.a4z0.lwjgl.demo.voxel.position.Location;
-import org.a4z0.lwjgl.demo.voxel.render.OutlineRenderer;
-import org.a4z0.lwjgl.demo.voxel.render.VoxelRenderer;
-import org.a4z0.lwjgl.demo.voxel.shader.pre.VGShaders;
-import org.a4z0.lwjgl.demo.voxel.window.Window;
-import org.a4z0.lwjgl.demo.voxel.world.Overworld;
-import org.a4z0.lwjgl.demo.voxel.world.chunk.IChunk;
-import org.a4z0.lwjgl.demo.voxel.world.chunk.provider.IChunkProvider;
-import org.a4z0.lwjgl.demo.voxel.world.chunk.provider.ChunkProvider;
-import org.a4z0.lwjgl.demo.voxel.world.pipeline.IPipeline;
-import org.a4z0.lwjgl.demo.voxel.world.pipeline.Pipeline;
+import org.a4z0.lwjgl.demo.voxel.gl.render.OutlineRenderer;
+import org.a4z0.lwjgl.demo.voxel.gl.render.VoxelRenderer;
+import org.a4z0.lwjgl.demo.voxel.gl.shader.pre.VGShaders;
+import org.a4z0.lwjgl.demo.voxel.gl.window.Window;
+import org.a4z0.lwjgl.demo.voxel.level.Level;
+import org.a4z0.lwjgl.demo.voxel.chunk.Chunk;
+import org.a4z0.lwjgl.demo.voxel.chunk.IChunkProvider;
+import org.a4z0.lwjgl.demo.voxel.chunk.ChunkProvider;
+import org.a4z0.lwjgl.demo.voxel.pipeline.IPipeline;
+import org.a4z0.lwjgl.demo.voxel.pipeline.Pipeline;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -39,7 +39,6 @@ public class VoxelGameLWJGL {
 
     public static boolean FULLSCREEN;
     public static boolean DEBUG_CHUNK;
-    public static boolean DISABLE_FRUSTUM_UPDATE;
 
     public static void main(String[] args) {
         if(!glfwInit())
@@ -62,7 +61,7 @@ public class VoxelGameLWJGL {
 
         // Camera
         CAMERA = new FreeCamera();
-        CAMERA.getPosition().set(0, 16, 0);
+        CAMERA.getLocation().set(0, 16, 0);
 
         CAMERA_CONTROLLER = new ObjectCameraController(CAMERA);
 
@@ -71,7 +70,7 @@ public class VoxelGameLWJGL {
         OUTLINE_RENDERER = new OutlineRenderer();
 
         // Chunk Provider
-        CHUNK_PROVIDER = new ChunkProvider(new Overworld(0));
+        CHUNK_PROVIDER = new ChunkProvider(new Level(0L));
 
         for(int x = 0; x < 16; x++) {
             for(int y = 0; y < 16; y++) {
@@ -118,7 +117,7 @@ public class VoxelGameLWJGL {
             Matrix4f Projection = CAMERA.getProjection();
             Matrix4f View = CAMERA.getView();
 
-            Location Position = CAMERA.getPosition();
+            Location Position = CAMERA.getLocation();
 
             // Camera Projection + View
             VGShaders.VOXEL_SHADER_PROGRAM.bind();
@@ -160,7 +159,7 @@ public class VoxelGameLWJGL {
                 DEBUG_CHUNK = !DEBUG_CHUNK;
 
             if(DEBUG_CHUNK) {
-                IChunk chunk = CHUNK_PROVIDER.getChunkAt(Position.getBlockX(), Position.getBlockZ());
+                Chunk chunk = CHUNK_PROVIDER.getChunkAt(Position.getNearestX(), Position.getNearestZ());
 
                 WINDOW.setTitle("Chunk - X: " + chunk.getX() + ", Z: " + chunk.getZ() + " -> " + chunk.getClass().getSimpleName());
 

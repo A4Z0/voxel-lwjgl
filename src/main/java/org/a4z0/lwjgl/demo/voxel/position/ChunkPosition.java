@@ -1,6 +1,6 @@
 package org.a4z0.lwjgl.demo.voxel.position;
 
-import org.a4z0.lwjgl.demo.voxel.world.chunk.IChunk;
+import org.a4z0.lwjgl.demo.voxel.chunk.Chunk;
 
 /**
 * Represents a Chunk Position.
@@ -19,8 +19,8 @@ public class ChunkPosition {
     */
 
     public ChunkPosition(int x, int z) {
-        this.x = (x >> IChunk.CHUNK_SIZE_X_BIT_SHIFT) * IChunk.CHUNK_SIZE_X;
-        this.z = (z >> IChunk.CHUNK_SIZE_Z_BIT_SHIFT) * IChunk.CHUNK_SIZE_Z;
+        this.x = (x >> Chunk.CHUNK_SIZE_X_BIT_SHIFT) * Chunk.CHUNK_SIZE_X;
+        this.z = (z >> Chunk.CHUNK_SIZE_Z_BIT_SHIFT) * Chunk.CHUNK_SIZE_Z;
     }
 
     /**
@@ -45,6 +45,6 @@ public class ChunkPosition {
     }
 
     public static long asBlock(int x, int z) {
-        return getIndex(x >> IChunk.CHUNK_SIZE_X_BIT_SHIFT, z >> IChunk.CHUNK_SIZE_Z_BIT_SHIFT);
+        return getIndex(x >> Chunk.CHUNK_SIZE_X_BIT_SHIFT, z >> Chunk.CHUNK_SIZE_Z_BIT_SHIFT);
     }
 }

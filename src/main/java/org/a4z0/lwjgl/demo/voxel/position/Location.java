@@ -1,19 +1,17 @@
 package org.a4z0.lwjgl.demo.voxel.position;
 
-import org.a4z0.lwjgl.demo.voxel.world.World;
+import org.a4z0.lwjgl.demo.voxel.level.LevelAccess;
 import org.joml.Vector3f;
 
 /**
-* Represents a {@link Location} in a three-dimensional space.
-*
-* @see Position
+* Represents a location in a three-dimensional space.
 */
 
 public class Location {
 
     protected static final double $2PI = 2 * Math.PI;
 
-    protected World world;
+    protected LevelAccess level;
     protected float x, y, z;
     protected float pitch;
     protected float yaw;
@@ -22,8 +20,21 @@ public class Location {
     * Construct a {@link Location}.
     */
 
-    public Location() {
-        this(0, 0, 0, 0, -90);
+    public Location(final LevelAccess level) {
+        this(level, 0, 0, 0);
+    }
+
+    /**
+    * ...
+    *
+    * @param level ...
+    * @param x ...
+    * @param y ...
+    * @param z ...
+    */
+
+    public Location(final LevelAccess level, final float x, final float y, final float z) {
+        this(level, x, y, z, -90, 0);
     }
 
     /**
@@ -36,12 +47,17 @@ public class Location {
     * @param pitch Pitch.
     */
 
-    public Location(final float x, final float y, final float z, final float yaw, final float pitch) {
+    public Location(final LevelAccess level, final float x, final float y, final float z, final float yaw, final float pitch) {
+        this.level = level;
         this.x = x;
         this.y = y;
         this.z = z;
         this.yaw = yaw;
         this.pitch = pitch;
+    }
+
+    public LevelAccess getLevel() {
+        return this.level;
     }
 
     /**
@@ -72,7 +88,7 @@ public class Location {
     * @return the X-Axis of the Block this {@link Location} is in.
     */
 
-    public int getBlockX() {
+    public int getNearestX() {
         return (int) Math.floor(this.x);
     }
 
@@ -80,7 +96,7 @@ public class Location {
     * @return the Y-Axis of the Block this {@link Location} is in.
     */
 
-    public int getBlockY() {
+    public int getNearestY() {
         return (int) Math.floor(this.y);
     }
 
@@ -88,7 +104,7 @@ public class Location {
     * @return the Z-Axis of the Block this {@link Location} is in.
     */
 
-    public int getBlockZ() {
+    public int getNearestZ() {
         return (int) Math.floor(this.z);
     }
 
