@@ -1,7 +1,9 @@
 package org.a4z0.lwjgl.demo.voxel.entity;
 
-import org.a4z0.lwjgl.demo.voxel.level.LevelAccess;
-import org.a4z0.lwjgl.demo.voxel.position.Location;
+import org.a4z0.lwjgl.demo.voxel.Main;
+import org.a4z0.lwjgl.demo.voxel.block.BlockState;
+import org.a4z0.lwjgl.demo.voxel.level.Level;
+import org.a4z0.lwjgl.demo.voxel.math.Location;
 
 /**
 * Represents an Entity.
@@ -14,48 +16,48 @@ public abstract class Entity {
     /**
     * Construct a {@link Entity}.
     *
-    * @param level ...
+    * @param level {@link Level} this {@link Entity} will be at.
     */
 
-    protected Entity(LevelAccess level) {
+    public Entity(Level level) {
         this(level, 0f, 0f, 0f);
     }
 
     /**
     * Construct a {@link Entity}.
     *
-    * @param level ...
-    * @param x ...
-    * @param y ...
-    * @param z ...
+    * @param level {@link Level} this {@link Entity} will be at.
+    * @param x X-Axis.
+    * @param y Y-Axis.
+    * @param z Z-Axis.
     */
 
-    protected Entity(LevelAccess level, float x, float y, float z) {
-        this(new Location(level, x, y, z));
+    public Entity(Level level, float x, float y, float z) {
+        this(level, x, y, z, 0f, 0f);
     }
 
     /**
     * Construct a {@link Entity}.
     *
-    * @param level ...
-    * @param x ...
-    * @param y ...
-    * @param z ...
-    * @param yaw ...
-    * @param pitch ...
+    * @param level {@link Level} this {@link Entity} will be at.
+    * @param x X-Axis.
+    * @param y Y-Axis.
+    * @param z Z-Axis.
+    * @param yaw Yaw.
+    * @param pitch Pitch.
     */
 
-    protected Entity(LevelAccess level, float x, float y, float z, float yaw, float pitch) {
+    public Entity(Level level, float x, float y, float z, float yaw, float pitch) {
         this(new Location(level, x, y, z, yaw, pitch));
     }
 
     /**
     * Construct a {@link Entity}.
     *
-    * @param location ...
+    * @param location {@link Location} where this {@link Entity} will be.
     */
 
-    protected Entity(final Location location) {
+    public Entity(Location location) {
         this.location = location;
     }
 
@@ -65,6 +67,15 @@ public abstract class Entity {
 
     public Location getLocation() {
         return this.location;
+    }
+
+    /**
+    * @return true if the {@link Entity} is on the ground.
+    */
+
+    public boolean isOnGround() {
+        return true;
+        //return !Main.TEST_LEVEL.getBlockAt(this.getLocation().getNearestX(), this.getLocation().getNearestY() -1, this.getLocation().getNearestZ()).compare(BlockState.EMPTY_BLOCK_STATE);
     }
 
     /**

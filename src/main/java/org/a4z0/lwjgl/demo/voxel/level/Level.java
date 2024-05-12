@@ -1,36 +1,42 @@
 package org.a4z0.lwjgl.demo.voxel.level;
 
-import org.a4z0.lwjgl.demo.voxel.chunk.Chunk;
-import org.a4z0.lwjgl.demo.voxel.chunk.IChunkProvider;
-import org.a4z0.lwjgl.demo.voxel.chunk.InternalChunkProvider;
+import org.a4z0.lwjgl.demo.voxel.block.BlockState;
+import org.a4z0.lwjgl.demo.voxel.level.chunk.Chunk;
 
 /**
 * Represents a Level.
 */
 
-public class Level implements LevelAccess {
-
-    protected final long seed;
-    protected final IChunkProvider provider;
+public interface Level {
 
     /**
-    * Construct a {@link Level}.
-    *
-    * @param seed ...
+    * @return the {@link Level}'s Seed.
     */
 
-    public Level(long seed) {
-        this.seed = seed;
-        this.provider = new InternalChunkProvider(this);
-    }
+    long getSeed();
 
-    @Override
-    public long getSeed() {
-        return this.seed;
-    }
+    /**
+    * Retrieves a {@link Chunk} at the coordinates.
+    *
+    * @param x X-Axis.
+    * @param z Y-Axis.
+    *
+    * @return a {@link Chunk}.
+    */
 
-    @Override
-    public Chunk getChunkAt(int x, int z) {
-        return this.provider.getChunkOrNull(x, z);
+    Chunk getChunkAt(int x, int z);
+
+    /**
+    * Retrieves a {@link BlockState} at the coordinates.
+    *
+    * @param x X-Axis.
+    * @param y Y-Axis.
+    * @param z Z-Axis.
+    *
+    * @return a {@link BlockState}.
+    */
+
+    default BlockState getBlockAt(int x, int y, int z) {
+        return this.getChunkAt(x, z).getBlockAt(x, y, z);
     }
 }

@@ -1,7 +1,7 @@
 package org.a4z0.lwjgl.demo.voxel.entity;
 
-import org.a4z0.lwjgl.demo.voxel.level.LevelAccess;
-import org.a4z0.lwjgl.demo.voxel.position.Location;
+import org.a4z0.lwjgl.demo.voxel.level.Level;
+import org.a4z0.lwjgl.demo.voxel.math.Location;
 
 /**
 * Represents an Entity Living.
@@ -14,57 +14,58 @@ public abstract class EntityLiving extends Entity {
     /**
     * Construct a {@link EntityLiving}.
     *
-    * @param name ...
-    * @param level ...
+    * @param name {@link EntityLiving}'s Name.
+    * @param level {@link Level} this {@link EntityLiving} will be at.
     */
 
-    protected EntityLiving(@Deprecated String name, LevelAccess level) {
-        this(name, new Location(level));
+    protected EntityLiving(@Deprecated String name, Level level) {
+        this(name, level, 0f, 0f, 0f);
     }
 
     /**
     * Construct a {@link EntityLiving}.
     *
-    * @param name ...
-    * @param x ...
-    * @param y ...
-    * @param z ...
+    * @param name {@link EntityLiving}'s Name.
+    * @param level {@link Level} this {@link EntityLiving} will be at.
+    * @param x X-Axis.
+    * @param y Y-Axis.
+    * @param z Z-Axis.
     */
 
-    protected EntityLiving(@Deprecated String name, LevelAccess level, float x, float y, float z) {
-        this(name, new Location(level, x, y, z));
+    protected EntityLiving(@Deprecated String name, Level level, float x, float y, float z) {
+        this(name, level, x, y, z, 0f, 0f);
     }
 
     /**
     * Construct a {@link EntityLiving}.
     *
-    * @param name ...
-    * @param level ...
-    * @param x ...
-    * @param y ...
-    * @param z ...
-    * @param yaw ...
-    * @param pitch ...
+    * @param name {@link EntityLiving}'s Name.
+    * @param level {@link Level} this {@link EntityLiving} will be at.
+    * @param x X-Axis.
+    * @param y Y-Axis.
+    * @param z Z-Axis.
+    * @param yaw Yaw.
+    * @param pitch Pitch.
     */
 
-    protected EntityLiving(@Deprecated String name, LevelAccess level, float x, float y, float z, float yaw, float pitch) {
+    public EntityLiving(@Deprecated String name, Level level, float x, float y, float z, float yaw, float pitch) {
         this(name, new Location(level, x, y, z, yaw, pitch));
     }
 
     /**
     * Construct a {@link EntityLiving}.
     *
-    * @param location ...
+    * @param location {@link Location} where this {@link EntityLiving} will be.
     */
 
-    protected EntityLiving(@Deprecated String name, Location location) {
+    public EntityLiving(@Deprecated String name, Location location) {
         super(location);
 
         this.name = name;
     }
 
     /**
-    * @return this {@link EntityLiving}'s Name.
+    * @return the Name.
     */
 
     @Deprecated

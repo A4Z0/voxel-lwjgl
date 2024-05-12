@@ -83,7 +83,7 @@ public class Palette<T> {
     */
 
     public T get(int x, int y, int z) {
-        return this.get(((y & INDEXED_LENGTH_Y) << BIT_SHIFT_X | (z & INDEXED_LENGTH_Z)) << BIT_SHIFT_Z | x & INDEXED_LENGTH_X);
+        return this.get(((y & INDEXED_LENGTH_Y) << BIT_SHIFT_X | (z & INDEXED_LENGTH_Z)) << BIT_SHIFT_Z | (x & INDEXED_LENGTH_X));
     }
 
     /**
@@ -107,7 +107,7 @@ public class Palette<T> {
     */
 
     public void set(int x, int y, int z, T e) {
-        this.set(((y & INDEXED_LENGTH_Y) << BIT_SHIFT_X | (z & INDEXED_LENGTH_Z)) << BIT_SHIFT_Z | x & INDEXED_LENGTH_X, e);
+        this.set(((y & INDEXED_LENGTH_Y) << BIT_SHIFT_X | (z & INDEXED_LENGTH_Z)) << BIT_SHIFT_Z | (x & INDEXED_LENGTH_X), e);
     }
 
     /**

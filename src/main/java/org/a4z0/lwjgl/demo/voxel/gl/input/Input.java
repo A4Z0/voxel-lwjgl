@@ -1,6 +1,6 @@
 package org.a4z0.lwjgl.demo.voxel.gl.input;
 
-import org.a4z0.lwjgl.demo.voxel.VoxelGameLWJGL;
+import org.a4z0.lwjgl.demo.voxel.Main;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 
@@ -32,7 +32,7 @@ public final class Input {
     */
 
     public static boolean isKeyDown(int GL_KEY_CODE) {
-        return GLFW.glfwGetKey(VoxelGameLWJGL.WINDOW.getID(), GL_KEY_CODE) == 1;
+        return GLFW.glfwGetKey(Main.GL_WINDOW, GL_KEY_CODE) == 1;
     }
 
     /**
@@ -62,7 +62,7 @@ public final class Input {
     */
 
     public static boolean isButtonDown(int GL_BUTTON_CODE) {
-        return GLFW.glfwGetMouseButton(VoxelGameLWJGL.WINDOW.getID(), GL_BUTTON_CODE) == 1;
+        return GLFW.glfwGetMouseButton(Main.GL_WINDOW, GL_BUTTON_CODE) == 1;
     }
 
     /**
@@ -91,7 +91,7 @@ public final class Input {
 
     public static double getMouseX() {
         DoubleBuffer DOUBLE_BUFFER = BufferUtils.createDoubleBuffer(1);
-        GLFW.glfwGetCursorPos(VoxelGameLWJGL.WINDOW.getID(), DOUBLE_BUFFER, null);
+        GLFW.glfwGetCursorPos(Main.GL_WINDOW, DOUBLE_BUFFER, null);
 
         return DOUBLE_BUFFER.get();
     }
@@ -102,7 +102,7 @@ public final class Input {
 
     public static double getMouseY() {
         DoubleBuffer DOUBLE_BUFFER = BufferUtils.createDoubleBuffer(1);
-        GLFW.glfwGetCursorPos(VoxelGameLWJGL.WINDOW.getID(), null, DOUBLE_BUFFER);
+        GLFW.glfwGetCursorPos(Main.GL_WINDOW, null, DOUBLE_BUFFER);
 
         return DOUBLE_BUFFER.get();
     }

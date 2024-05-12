@@ -1,6 +1,6 @@
 package org.a4z0.lwjgl.demo.voxel.camera;
 
-import org.a4z0.lwjgl.demo.voxel.position.Location;
+import org.a4z0.lwjgl.demo.voxel.math.Vector3f;
 import org.joml.Matrix4f;
 
 /**
@@ -18,19 +18,53 @@ public interface Camera {
     float DEFAULT_YAW = -90f;
 
     /**
-    * @return the {@link Camera} {@link Location}.
+    * @return the Yaw.
     */
 
-    Location getLocation();
+    float getYaw();
 
     /**
-    * @return the {@link Camera} Projection {@link Matrix4f Matrix}.
+    * ...
+    *
+    * @param yaw ...
+    */
+
+    void setYaw(float yaw);
+
+    /**
+    * @return the Pitch.
+    */
+
+    float getPitch();
+
+    /**
+    * ...
+    *
+    * @param pitch ...
+    */
+
+    void setPitch(float pitch);
+
+    /**
+    * @return ...
+    */
+
+    Vector3f getPosition();
+
+    /**
+    * @return ...
+    */
+
+    Vector3f getDirection();
+
+    /**
+    * @return ...
     */
 
     Matrix4f getProjection();
 
     /**
-    * @return the {@link Camera} View {@link Matrix4f Matrix}.
+    * @return ...
     */
 
     Matrix4f getView();

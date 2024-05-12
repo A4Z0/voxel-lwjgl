@@ -1,10 +1,17 @@
 package org.a4z0.lwjgl.demo.voxel.gl.render;
 
 import jdk.jfr.Experimental;
-import org.a4z0.lwjgl.demo.voxel.legacy.collision.AABB;
+import org.a4z0.lwjgl.demo.voxel.gl.shader.pre.VGShaders;
+import org.a4z0.lwjgl.demo.voxel.gl.vertex.VertexStream;
+import org.a4z0.lwjgl.demo.voxel.math.AABB;
 import org.a4z0.lwjgl.demo.voxel.gl.vertex.VertexBuffer;
-import org.a4z0.lwjgl.demo.voxel.chunk.Chunk;
-import org.a4z0.lwjgl.demo.voxel.pipeline.IPipeline;
+import org.a4z0.lwjgl.demo.voxel.level.chunk.Chunk;
+import org.joml.Matrix4f;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 /**
 * ...
@@ -13,14 +20,11 @@ import org.a4z0.lwjgl.demo.voxel.pipeline.IPipeline;
 @Experimental
 public class OutlineRenderer {
 
-    /** Represents the bounding edges of a {@link IPipeline}. */
     public static final AABB VOXEL_BOUNDARIES = new AABB(0, 0, 0, -1, -1, -1);
 
-    /** Represents the bounding edges of a {@link Chunk}. */
     public static final AABB BOUNDARIES = new AABB(Chunk.CHUNK_SIZE_X -1, Chunk.CHUNK_SIZE_Y -1, Chunk.CHUNK_SIZE_Z -1, -1, -1, -1);
 
-    /** Represents the bounding edges of a {@link IPipeline} */
-    public static final AABB BLOCK_BOUNDARIES = new AABB(IPipeline.LAYER_SIZE_X -1, IPipeline.LAYER_SIZE_Y -1, IPipeline.LAYER_SIZE_Z -1, -1, -1, -1);
+    public static final AABB BLOCK_BOUNDARIES = null; /*new AABB(IPipeline.LAYER_SIZE_X -1, IPipeline.LAYER_SIZE_Y -1, IPipeline.LAYER_SIZE_Z -1, -1, -1, -1);*/
 
     /**
     * Construct a {@link OutlineRenderer}.
@@ -49,37 +53,33 @@ public class OutlineRenderer {
 
     // TODO: Describe what each parameter does.
     public void render(float x1, float y1, float z1, float x2, float y2, float z2, float x, float y, float z, float r, float g, float b, float a, float width) {
-        this.render(null/*new VertexBuffer()*/, x1, y1, z1, x2, y2, z2, x, y, z, r, g, b, a, width);
-    }
+        VertexStream Stream = new VertexStream()
+            .put(x1 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
+            .put(x2 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
+            .put(x1 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
+            .put(x2 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
+            .put(x1 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
+            .put(x2 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
+            .put(x1 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
+            .put(x2 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
+            .put(x1 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
+            .put(x1 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
+            .put(x2 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
+            .put(x2 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
+            .put(x1 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
+            .put(x1 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
+            .put(x2 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
+            .put(x2 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
+            .put(x1 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
+            .put(x1 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
+            .put(x2 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
+            .put(x2 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
+            .put(x1 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
+            .put(x1 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
+            .put(x2 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
+            .put(x2 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f);
 
-    // TODO: Describe what each parameter does.
-    public void render(VertexBuffer Buffer, float x1, float y1, float z1, float x2, float y2, float z2, float x, float y, float z, float r, float g, float b, float a, float width) {
-        /*new VertexStream()
-            .put(x1 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
-            .put(x2 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
-            .put(x1 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
-            .put(x2 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
-            .put(x1 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
-            .put(x2 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
-            .put(x1 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
-            .put(x2 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
-            .put(x1 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
-            .put(x1 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
-            .put(x2 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
-            .put(x2 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
-            .put(x1 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
-            .put(x1 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
-            .put(x2 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
-            .put(x2 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
-            .put(x1 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
-            .put(x1 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
-            .put(x2 + 0.5f).put(y1 + 0.5f).put(z1 + 0.5f)
-            .put(x2 + 0.5f).put(y1 + 0.5f).put(z2 + 0.5f)
-            .put(x1 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
-            .put(x1 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
-            .put(x2 + 0.5f).put(y2 + 0.5f).put(z1 + 0.5f)
-            .put(x2 + 0.5f).put(y2 + 0.5f).put(z2 + 0.5f)
-        .consume(Buffer);
+        VertexBuffer Buffer = new VertexBuffer(Stream.array(), 0);
 
         VGShaders.OUTLINE_SHADER_PROGRAM.bind();
 
@@ -97,6 +97,6 @@ public class OutlineRenderer {
         Buffer.getVAO().unbind();
         VGShaders.OUTLINE_SHADER_PROGRAM.unbind();
 
-        Buffer.delete();*/
+        Buffer.delete();
     }
 }
