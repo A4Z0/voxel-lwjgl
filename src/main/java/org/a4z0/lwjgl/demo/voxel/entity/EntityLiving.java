@@ -1,15 +1,9 @@
 package org.a4z0.lwjgl.demo.voxel.entity;
 
 import org.a4z0.lwjgl.demo.voxel.level.Level;
-import org.a4z0.lwjgl.demo.voxel.math.Location;
-
-/**
-* Represents an Entity Living.
-*/
+import org.a4z0.lwjgl.demo.voxel.level.Location;
 
 public abstract class EntityLiving extends Entity {
-
-    protected final String name;
 
     /**
     * Construct a {@link EntityLiving}.
@@ -18,7 +12,7 @@ public abstract class EntityLiving extends Entity {
     * @param level {@link Level} this {@link EntityLiving} will be at.
     */
 
-    protected EntityLiving(@Deprecated String name, Level level) {
+    protected EntityLiving(String name, Level level) {
         this(name, level, 0f, 0f, 0f);
     }
 
@@ -32,7 +26,7 @@ public abstract class EntityLiving extends Entity {
     * @param z Z-Axis.
     */
 
-    protected EntityLiving(@Deprecated String name, Level level, float x, float y, float z) {
+    protected EntityLiving(String name, Level level, float x, float y, float z) {
         this(name, level, x, y, z, 0f, 0f);
     }
 
@@ -48,7 +42,7 @@ public abstract class EntityLiving extends Entity {
     * @param pitch Pitch.
     */
 
-    public EntityLiving(@Deprecated String name, Level level, float x, float y, float z, float yaw, float pitch) {
+    protected EntityLiving(String name, Level level, float x, float y, float z, float yaw, float pitch) {
         this(name, new Location(level, x, y, z, yaw, pitch));
     }
 
@@ -58,18 +52,27 @@ public abstract class EntityLiving extends Entity {
     * @param location {@link Location} where this {@link EntityLiving} will be.
     */
 
-    public EntityLiving(@Deprecated String name, Location location) {
+    protected EntityLiving(String name, Location location) {
         super(location);
 
-        this.name = name;
+        this.setName(name);
     }
 
     /**
-    * @return the Name.
+    * @return the {@link EntityLiving}'s Name.
     */
 
-    @Deprecated
     public String getName() {
-        return this.name;
+        return this.NBT_TAG_COMPOUND.getString("name");
+    }
+
+    /**
+    * Sets the {@link EntityLiving}'s Name.
+    *
+    * @param name Name to be set.
+    */
+
+    public void setName(String name) {
+        this.NBT_TAG_COMPOUND.setString("name", name);
     }
 }

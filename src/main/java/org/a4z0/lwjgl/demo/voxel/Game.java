@@ -1,166 +1,96 @@
 package org.a4z0.lwjgl.demo.voxel;
 
-import org.a4z0.lwjgl.demo.voxel.camera.Camera;
 import org.a4z0.lwjgl.demo.voxel.entity.EntityPlayer;
-import org.a4z0.lwjgl.demo.voxel.gl.input.Input;
-import org.a4z0.lwjgl.demo.voxel.level.chunk.layer.ChunkLayer;
-import org.a4z0.lwjgl.demo.voxel.level.chunk.layer.ChunkLayers;
+import org.a4z0.lwjgl.demo.voxel.level.server.LevelServer;
 import org.a4z0.lwjgl.demo.voxel.math.Vector3f;
+import org.a4z0.lwjgl.demo.voxel.server.Server;
+import org.a4z0.lwjgl.demo.voxel.server.ServerWaterResistant;
+import org.a4z0.lwjgl.demo.voxel.world.server.WorldServer;
+import org.a4z0.lwjgl.demo.voxel.legacy.util.Input;
+
+import java.util.UUID;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-/**
-* Game's Main class that can only be instanced once.
-*/
+public class Game {
 
-public final class Game {
+    public static Server SERVER = new ServerWaterResistant();
+    public static WorldServer WORLD_SERVER = new WorldServer(SERVER, null, null);
+    public static LevelServer LEVEL_SERVER = new LevelServer(WORLD_SERVER, UUID.randomUUID(), null, 0L);
 
-    private static Game INSTANCE = new Game();
-    public static final ChunkLayers[] LAYERS = new ChunkLayers[9];
+    public static EntityPlayer PLAYER = new EntityPlayer("A4Z0", LEVEL_SERVER, 0, 1, 0);
 
-    static {
-        new Thread(() -> {
-            int i = 0;
+    /*static {
+        Random r = new Random();
 
-            for(int x = -1; x <= 1; x++) {
-                for (int z = -1; z <= 1; z++) {
-                    LAYERS[i++] = new ChunkLayers(Main.TEST_LEVEL.getChunkAt(x * 16, z * 16));
+        for(int x = 0; x <= 15; x++) {
+            for(int y = 0; y <= 15; y++) {
+                for(int z = 0; z <= 15; z++) {
+                    LEVEL_SERVER.getBlockAt(x, y, z).setColor(r.nextInt(255), r.nextInt(255), r.nextInt(255));
                 }
             }
-        }).start();
-    }
+        }
+    }*/
 
-    private EntityPlayer player;
-    private Camera playerCamera;
+    private static boolean VISIBLE = true;
 
+    private static float LAST_MOUSE_X = 0f;
+    private static float LAST_MOUSE_Y = 0f;
 
-    private final float SENSITIVITY = 0.05f;
+    public static void onMouse(double x, double y) {
+        if(!Main.PAUSED) {
+            if(VISIBLE) {
+                glfwSetInputMode(Main.GL_WINDOW, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    private float LAST_MOUSE_X = 0f;
-    private float LAST_MOUSE_Y = 0f;
+                VISIBLE = false;
+            }
 
-    /**
-    * Construct a {@link Game}.
-    */
+            final float SENSITIVITY = 0.05f;
 
-    public Game() {
-        if(INSTANCE != null)
-            throw new IllegalAccessError("Unable to instantiate another Game!");
+            PLAYER.getLocation().setYaw((float) (PLAYER.getLocation().getYaw() + ((LAST_MOUSE_X - x) * -SENSITIVITY)));
+            PLAYER.getLocation().setPitch((float) (PLAYER.getLocation().getPitch() - ((LAST_MOUSE_Y - y) * SENSITIVITY)));
 
-        INSTANCE = this;
-    }
+            LAST_MOUSE_X = (float) x;
+            LAST_MOUSE_Y = (float) y;
+        } else {
+            if(!VISIBLE) {
+                glfwSetInputMode(Main.GL_WINDOW, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-    /**
-    * @return the current {@link EntityPlayer} or null.
-    */
-
-    public EntityPlayer getPlayer() {
-        return this.player;
-    }
-
-    /**
-    * Sets the current {@link EntityPlayer}.
-    *
-    * @param p {@link EntityPlayer} or null.
-    */
-
-    public void setPlayer(final EntityPlayer p) {
-        this.player = p;
-    }
-
-    /**
-     *
-     * @return ...
-     */
-
-    public Camera getPlayerCamera() {
-        return playerCamera;
-    }
-
-    /**
-    * ...
-    *
-    * @param playerCamera ...
-    */
-
-    public void setPlayerCamera(Camera playerCamera) {
-        this.playerCamera = playerCamera;
-    }
-
-    /**
-    * ...
-    */
-
-    public void render() {
-        for(ChunkLayers layers : LAYERS) {
-            for(ChunkLayer layer : layers.getLayers()) {
-               layer.update();
-               layer.render();
+                VISIBLE = true;
             }
         }
     }
 
-    /**
-    * Ticks the {@link EntityPlayer}'s Camera.
-    */
-
-    public void tickCamera() {
-        if(this.playerCamera == null || this.player == null)
-            return;
-
-        this.playerCamera.getPosition().set(
-            this.player.getLocation().getX(),
-            this.player.getLocation().getY() + 1,
-            this.player.getLocation().getZ()
-        );
-
-        this.playerCamera.setPitch(this.player.getLocation().getPitch());
-        this.playerCamera.setYaw(this.player.getLocation().getYaw());
+    public static void onKeyboard() {
+        onKeyboard(Math.toRadians(PLAYER.getLocation().getYaw()));
     }
 
-    public void tickPlayerDir(float X, float Y) {
-        this.player.getLocation().setYaw(this.player.getLocation().getYaw() + ((LAST_MOUSE_X - X) * -SENSITIVITY));
-        this.player.getLocation().setPitch(this.player.getLocation().getPitch() - ((LAST_MOUSE_Y - Y) * SENSITIVITY));
-
-        this.LAST_MOUSE_X = X;
-        this.LAST_MOUSE_Y = Y;
+    public static void onKeyboard(double y) {
+        onKeyboard(new Vector3f((float) Math.sin(-y), 0, (float) Math.cos(y)));
     }
 
-    public void tickPlayerMovement() {
-        //Vector3f dir = this.player.getLocation().getDirection().normalize();
-        double yaw = Math.toRadians(this.player.getLocation().getYaw());
+    public static void onKeyboard(Vector3f d) {
+        if(Input.isKeyDown(GLFW_KEY_LEFT_CONTROL) && Input.isKeyPressed(GLFW_KEY_X)) {
+            Main.CLOSE = true;
 
-        Vector3f dir = new Vector3f((float) Math.sin(-yaw), 0, (float) Math.cos(yaw));
+            System.out.println("[Action]: Quit");
+        }
 
-        if(Input.isKeyDown(GLFW_KEY_W))
-            this.player.getLocation().add(dir.getX() * this.player.getWalkSpeed(), 0, dir.getZ() * this.player.getWalkSpeed());
-        if(Input.isKeyDown(GLFW_KEY_A))
-            this.player.getLocation().add(dir.getZ() * this.player.getWalkSpeed(), 0, -dir.getX() * this.player.getWalkSpeed());
-        if(Input.isKeyDown(GLFW_KEY_S))
-            this.player.getLocation().subtract(dir.getX() * this.player.getWalkSpeed(), 0, dir.getZ() * this.player.getWalkSpeed());
-        if(Input.isKeyDown(GLFW_KEY_D))
-            this.player.getLocation().subtract(dir.getZ() * this.player.getWalkSpeed(), 0, -dir.getX() * this.player.getWalkSpeed());
-    }
+        if(Input.isKeyPressed(GLFW_KEY_ESCAPE)) {
+            Main.PAUSED = !Main.PAUSED;
 
-    /**
-    * Ticks the Game.
-    */
+            System.out.println("[Action]: Pause -> " + (Main.PAUSED ? "Frozen" : "Unfrozen") + "!");
+        }
 
-    public void tick() {
-        tickCamera();
-
-        if(!TimeTicker.FPS_60.get())
-            return;
-
-        player.tick();
-        tickPlayerMovement();
-    }
-
-    /**
-    * @return a {@link Game}'s Instance.
-    */
-
-    public static Game getInstance() {
-        return INSTANCE;
+        if(!Main.PAUSED) {
+            if (Input.isKeyDown(GLFW_KEY_W))
+                PLAYER.getLocation().add(d.getX() * PLAYER.getWalkSpeed(), 0, d.getZ() * PLAYER.getWalkSpeed());
+            if (Input.isKeyDown(GLFW_KEY_A))
+                PLAYER.getLocation().add(d.getZ() * PLAYER.getWalkSpeed(), 0, -d.getX() * PLAYER.getWalkSpeed());
+            if (Input.isKeyDown(GLFW_KEY_S))
+                PLAYER.getLocation().subtract(d.getX() * PLAYER.getWalkSpeed(), 0, d.getZ() * PLAYER.getWalkSpeed());
+            if (Input.isKeyDown(GLFW_KEY_D))
+                PLAYER.getLocation().subtract(d.getZ() * PLAYER.getWalkSpeed(), 0, -d.getX() * PLAYER.getWalkSpeed());
+        }
     }
 }

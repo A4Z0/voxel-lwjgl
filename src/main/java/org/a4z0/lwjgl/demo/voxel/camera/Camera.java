@@ -3,10 +3,6 @@ package org.a4z0.lwjgl.demo.voxel.camera;
 import org.a4z0.lwjgl.demo.voxel.math.Vector3f;
 import org.joml.Matrix4f;
 
-/**
-* Represents a Camera.
-*/
-
 public interface Camera {
 
     float DEFAULT_FAR_PLANE = 1000f;
@@ -58,13 +54,13 @@ public interface Camera {
     Vector3f getDirection();
 
     /**
-    * @return ...
+    * @return the Projection.
     */
 
     Matrix4f getProjection();
 
     /**
-    * @return ...
+    * @return the View.
     */
 
     Matrix4f getView();

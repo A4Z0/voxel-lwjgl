@@ -1,35 +1,37 @@
 package org.a4z0.lwjgl.demo.voxel.entity;
 
-import org.a4z0.lwjgl.demo.voxel.block.BlockState;
+import org.a4z0.lwjgl.demo.voxel.Main;
+import org.a4z0.lwjgl.demo.voxel.block.voxel.Voxel;
+import org.a4z0.lwjgl.demo.voxel.legacy.util.Input;
 import org.a4z0.lwjgl.demo.voxel.level.Level;
-import org.a4z0.lwjgl.demo.voxel.math.AABB;
-import org.a4z0.lwjgl.demo.voxel.math.Location;
+import org.a4z0.lwjgl.demo.voxel.level.Location;
+import org.a4z0.lwjgl.demo.voxel.math.AABBfc;
+import org.a4z0.lwjgl.demo.voxel.nbt.NBTTagCompound;
+import org.a4z0.lwjgl.demo.voxel.math.AABBf;
+import org.a4z0.lwjgl.demo.voxel.render.shader.pre.VGShaders;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/**
-* Represents an Entity Player.
-*/
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 
 public class EntityPlayer extends EntityLiving {
 
-    public static final float PLAYER_HEIGHT = 2.75f;
-    public static final float PLAYER_WIDTH = 1f;
+    public static final float GRAVITY_FORCE = 0.01f;
 
-    public static final AABB PLAYER_AABB = new AABB((PLAYER_WIDTH / 2f), (PLAYER_HEIGHT / 2f), (PLAYER_WIDTH / 2f), -(PLAYER_WIDTH / 2f), -(PLAYER_HEIGHT / 2f), -(PLAYER_WIDTH / 2f));
+    public static final float DEFAULT_WALK_SPEED = 0.1f;
+    public static final float DEFAULT_FLIGHT_SPEED = 0.1f;
 
-    protected boolean flying;
-    protected boolean is_on_ground = true;
-    protected float gravity_force = 0f;
+    public static final AABBf DEFAULT_PLAYER_BODY = new AABBf(0.5f, 1.0f, 0.5f).subtract(0.5f, 0.f, 0.5f);
 
-    @Deprecated
-    protected float walk_speed = 0.1f;
 
-    @Deprecated
-    protected float flight_speed = 1f;
+    protected boolean is_on_ground;
+    protected boolean is_flying;
 
-    protected AABB aabb;
+    private float vertical_speed_x;
+    private float vertical_speed_z;
+
+    private float horizontal_speed;
+
+    private float fallSpeed;
 
     /**
     * Construct a {@link EntityPlayer}.
@@ -82,15 +84,37 @@ public class EntityPlayer extends EntityLiving {
     public EntityPlayer(@Deprecated String name, Location location) {
         super(name, location);
 
-        this.aabb = new AABB((PLAYER_WIDTH / 2f), (PLAYER_HEIGHT / 2f), (PLAYER_WIDTH / 2f), -(PLAYER_WIDTH / 2f), -(PLAYER_HEIGHT / 2f), -(PLAYER_WIDTH / 2f));
+        this.NBT_TAG_COMPOUND.set("attribute", new NBTTagCompound());
+
+        this.setFlying(true);
+        this.setWalkSpeed(DEFAULT_WALK_SPEED);
+        this.setFlightSpeed(DEFAULT_FLIGHT_SPEED);
     }
 
     /**
-    * @return the Player's AABB.
+    * @return true if it is on the ground, false otherwise.
     */
 
-    public AABB getAABB() {
-        return this.aabb;
+    public boolean isOnGround() {
+        return this.is_on_ground;
+    }
+
+    /**
+    * @return true if flying, false otherwise.
+    */
+
+    public boolean isFlying() {
+        return this.is_flying;
+    }
+
+    /**
+    * ...
+    *
+    * @param flight ...
+    */
+
+    public void setFlying(boolean flight) {
+        this.is_flying = flight;
     }
 
     /**
@@ -98,35 +122,17 @@ public class EntityPlayer extends EntityLiving {
     */
 
     public float getWalkSpeed() {
-        return this.walk_speed;
+        return this.NBT_TAG_COMPOUND.getFloat("attribute.walk_speed");
     }
 
     /**
     * Sets the Walk speed.
     *
-    * @param walkSpeed Walk Speed.
+    * @param walkSpeed Walk Speed to be set.
     */
 
     public void setWalkSpeed(float walkSpeed) {
-        this.walk_speed = walkSpeed;
-    }
-
-    /**
-    * @return true if this {@link EntityPlayer} is flying, false otherwise.
-    */
-
-    public boolean isFlying() {
-        return this.flying;
-    }
-
-    /**
-    * Sets the Flight.
-    *
-    * @param flying Flying?
-    */
-
-    public void setFlying(boolean flying) {
-        this.flying = flying;
+        this.NBT_TAG_COMPOUND.setFloat("attribute.walk_speed", walkSpeed);
     }
 
     /**
@@ -134,31 +140,90 @@ public class EntityPlayer extends EntityLiving {
     */
 
     public float getFlightSpeed() {
-        return this.flight_speed;
+        return this.NBT_TAG_COMPOUND.getFloat("attribute.flight_speed");
     }
 
     /**
     * Sets the Flight Speed.
     *
-    * @param flightSpeed Flight Speed.
+    * @param flightSpeed Flight Speed to be set.
     */
 
     public void setFlightSpeed(float flightSpeed) {
-        this.flight_speed = flightSpeed;
+        this.NBT_TAG_COMPOUND.setFloat("attribute.flight_speed", flightSpeed);
     }
 
     @Override
     public void tick() {
-        this.tickGround();
-        this.tickGravity();
+        VGShaders.OUTLINE_SHADER_PROGRAM.bind();
+        VGShaders.OUTLINE_SHADER_PROGRAM.setUniform4fv("camera_projection", Main.Render.CAMERA.getProjection());
+        VGShaders.OUTLINE_SHADER_PROGRAM.setUniform4fv("camera_view", Main.Render.CAMERA.getView());
+
+        tickInput();
+        tickMovement();
+        tickGround();
+        tickGravity();
+
+        Main.OUTLINE_RENDERER.render(DEFAULT_PLAYER_BODY.clone().add(0, 1f, 0), 0, 0, 0, 1f, 1f, 1f, 1f, 1f);
+
+        VGShaders.OUTLINE_SHADER_PROGRAM.unbind();
+    }
+
+    private void tickInput() {
+        float vertical_speed_x = 0;
+        float vertical_speed_z = 0;
+        float horizontal_speed = 0;
+
+        if(Input.isKeyDown(GLFW_KEY_W))
+            vertical_speed_x += this.getWalkSpeed();
+        if(Input.isKeyDown(GLFW_KEY_A))
+            vertical_speed_z += this.getWalkSpeed();
+        if(Input.isKeyDown(GLFW_KEY_S))
+            vertical_speed_x -= this.getWalkSpeed();
+        if(Input.isKeyDown(GLFW_KEY_D))
+            vertical_speed_z -= this.getWalkSpeed();
+        if(Input.isKeyDown(GLFW_KEY_SPACE) && this.isFlying())
+            horizontal_speed += this.getFlightSpeed();
+        if(Input.isKeyDown(GLFW_KEY_LEFT_SHIFT) && this.isFlying())
+            horizontal_speed -= this.getFlightSpeed();
+        if(Input.isKeyPressed(GLFW_KEY_F))
+            this.setFlying(!this.is_flying);
+
+        this.vertical_speed_x = vertical_speed_x;
+        this.vertical_speed_z = vertical_speed_z;
+        this.horizontal_speed = horizontal_speed;
+    }
+
+    private void tickMovement() {
+        float RADIANS = (float) Math.toRadians(this.getLocation().getYaw());
+
+        float DIR_X = (float) Math.sin(-RADIANS);
+        float DIR_Z = (float) Math.cos(RADIANS);
+
+        this.getLocation().add(DIR_X * this.vertical_speed_x, 0, DIR_Z * this.vertical_speed_x);
+        this.getLocation().add(DIR_Z * this.vertical_speed_z, 0, -DIR_X * this.vertical_speed_z);
+        this.getLocation().add(0, this.horizontal_speed, 0);
     }
 
     private void tickGround() {
-        for(BlockState Block : this.getFeet()) {
-            if(Block.getColor() != 0) {
-                this.is_on_ground = true;
+        AABBfc Body = DEFAULT_PLAYER_BODY.clone().add(this.getLocation()).subtract(0, 0.0625f, 0);
 
-                return;
+        int MIN_X = (int) Math.floor(Body.getLowerX() / 0.0625f);
+        int MIN_Z = (int) Math.floor(Body.getLowerZ() / 0.0625f);
+        int MAX_X = (int) Math.floor(Body.getUpperX() / 0.0625f);
+        int MAX_Z = (int) Math.floor(Body.getUpperZ() / 0.0625f);
+
+        for(int x = MIN_X; x <= MAX_X; x++) {
+            for(int z = MIN_Z; z <= MAX_Z; z++) {
+                Voxel Voxel = Main.CHUNK.getVoxelAt(x, (int) Body.getLowerY(), z);
+
+                Main.OUTLINE_RENDERER.render(Voxel.$(), 0, 0, 0, 1f, 1f, 1f, 1f, 1f);
+
+                if(Voxel.intersects(Body.clone())) {
+                    this.is_on_ground = true;
+
+                    return;
+                }
             }
         }
 
@@ -166,53 +231,48 @@ public class EntityPlayer extends EntityLiving {
     }
 
     private void tickGravity() {
-        if(this.is_on_ground) {
-            this.gravity_force = 0f;
-        } else {
-            if(this.gravity_force < 14f) {
-                this.gravity_force += 0.01f;
-            }
+        if(this.isOnGround() || this.isFlying()) {
+            this.fallSpeed = 0;
 
-            float newY = (this.location.getY() - this.gravity_force);
+            return;
+        }
+
+        this.fallSpeed += GRAVITY_FORCE;
+
+        this.getLocation().subtract(0, fallSpeed, 0);
+    }
+
+    private void tickJump() {
+        /*if(this.is_on_ground) {
+            this.horizontal_speed = 0;
+        } else {
+            this.horizontal_speed += 0.01f;
+
+            AABBfc Body = DEFAULT_PLAYER_BODY.clone().add(this.location);
+
+            int minVoxelX = (int) Math.floor(Body.getLowerX() / 0.0625f);
+            int minVoxelZ = (int) Math.floor(Body.getLowerZ() / 0.0625f);
+            int maxVoxelX = (int) Math.ceil(Body.getUpperX() / 0.0625f);
+            int maxVoxelZ = (int) Math.ceil(Body.getUpperZ() / 0.0625f);
+
+            float newY = (this.location.getY() - this.horizontal_speed);
             float diff = 0;
 
-            BlockState tracedBlock = null;
+            for(int x = minVoxelX; x <= maxVoxelX; x++) {
+                for(int z = minVoxelZ; z <= maxVoxelZ; z++) {
+                    for(int y = this.getLocation().getNearestY(); y > 0; y--) {
+                        Voxel Voxel = Main.CHUNK.getVoxelAt(x, y, z);
 
-            for(int i = this.getLocation().getNearestY(); i < (128 - this.getLocation().getNearestY()); i++) {
-                for(BlockState Block : this.getUnder(i)) {
-                    tracedBlock = Block;
+                        if(Voxel.getColor() != 0 && Voxel.getPosition().getY() < newY) {
+                            diff = this.horizontal_speed - Voxel.getPosition().getY();
 
-                    break;
+                            break;
+                        }
+                    }
                 }
             }
 
-            if(
-                tracedBlock != null && tracedBlock.getPosition().getY() < newY
-            ) {
-                diff = this.gravity_force - tracedBlock.getPosition().getY();
-            }
-
-            this.location.subtract(0, this.gravity_force - diff, 0);
-        }
-    }
-
-    private List<BlockState> getFeet() {
-        return this.getUnder(-1);
-    }
-
-    private List<BlockState> getUnder(int i) {
-        List<BlockState> Blocks = new ArrayList<>();
-
-        for(int x = -1; x <= 1; x ++) {
-            for(int z = -1; z <= 1; z ++) {
-                Blocks.add(this.getLocation().getLevel().getBlockAt(
-                    x + this.getLocation().getNearestX(),
-                    i + this.getLocation().getNearestY(),
-                    z + this.getLocation().getNearestZ()
-                ));
-            }
-        }
-
-        return Blocks;
+            this.location.subtract(0, this.horizontal_speed - diff, 0);
+        }*/
     }
 }

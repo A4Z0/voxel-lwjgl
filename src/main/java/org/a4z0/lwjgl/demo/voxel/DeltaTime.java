@@ -20,9 +20,9 @@ public final class DeltaTime {
     * @return the time elapsed since the last frame in seconds.
     */
 
-    public double getElapsedTime() {
+    public float getElapsedTime() {
         long currentTimeNano = System.nanoTime();
-        return (currentTimeNano - lastFrameTimeNano) / 1.0E9d;
+        return (float) ((currentTimeNano - lastFrameTimeNano) / 1.0E9d);
     }
 
     /**

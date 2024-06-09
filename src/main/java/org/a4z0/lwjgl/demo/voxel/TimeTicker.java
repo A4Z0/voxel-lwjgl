@@ -6,7 +6,7 @@ package org.a4z0.lwjgl.demo.voxel;
 
 public class TimeTicker {
 
-    public static final TimeTicker FPS_60 = new TimeTicker(128d);
+    public static final TimeTicker FPS_60 = new TimeTicker(60d);
 
     protected DeltaTime deltaTime;
     protected double targetFps;

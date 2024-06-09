@@ -1,0 +1,83 @@
+package org.a4z0.lwjgl.demo.voxel.render.renderer.font;
+
+import org.a4z0.lwjgl.demo.voxel.font.GLFont;
+import org.a4z0.lwjgl.demo.voxel.font.Image;
+import org.a4z0.lwjgl.demo.voxel.legacy.done.buffer.DynamicBuffer;
+import org.a4z0.lwjgl.demo.voxel.legacy.gl.vertex.VertexArrayObject;
+import org.a4z0.lwjgl.demo.voxel.legacy.gl.vertex.VertexBufferObject;
+import org.a4z0.lwjgl.demo.voxel.render.shader.pre.VGShaders;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL20.*;
+
+public class FontRenderer {
+
+    public static GLFont FONT_E;
+    public static int TEST;
+
+    public FontRenderer() {
+        TEST = glGenTextures();
+
+        glBindTexture(GL_TEXTURE_2D, TEST);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 832, 20,
+                0, GL_RGBA, GL_UNSIGNED_BYTE, Image.getImageData(FontRenderer.class.getClassLoader().getResourceAsStream("assets/font/minecraft.png")));
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public static final int ELEMENTS_STRIDE = 2 + 2;
+
+    public void drawString() {
+        DynamicBuffer Buffer = new DynamicBuffer();
+
+        final float SIZE = 0.5f;
+        Buffer.put(-SIZE).put( SIZE).put(0f).put(1f);
+        Buffer.put(-SIZE).put(-SIZE).put(0f).put(0f);
+        Buffer.put( SIZE).put(-SIZE).put(1f).put(0f);
+
+        Buffer.put(-SIZE).put( SIZE).put(0f).put(1f);
+        Buffer.put( SIZE).put(-SIZE).put(1f).put(0f);
+        Buffer.put( SIZE).put( SIZE).put(1f).put(1f);
+
+        VertexArrayObject VAO = new VertexArrayObject();
+        VAO.bind();
+
+        VertexBufferObject VBO = new VertexBufferObject();
+        VBO.bind();
+
+        VBO.buffer(Buffer.array(), GL_STATIC_DRAW);
+
+        VAO.attribute(0, 2, GL_FLOAT, false, ELEMENTS_STRIDE * Float.BYTES, 0);
+        VAO.attribute(1, 2, GL_FLOAT, false, ELEMENTS_STRIDE * Float.BYTES, 2 * Float.BYTES);
+
+        VBO.unbind();
+
+        glDisable(GL_DEPTH_TEST);
+        VGShaders.TEXT_SHADER_PROGRAM.bind();
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, FONT_E.getID());
+
+
+        VGShaders.TEXT_SHADER_PROGRAM.setUniform4f("text_color", 0f, 0f, 0f, 1f);
+
+        glDrawArrays(GL_TRIANGLES, 0, (Buffer.size() / ELEMENTS_STRIDE));
+
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        VAO.unbind();
+
+        VGShaders.TEXT_SHADER_PROGRAM.unbind();
+        glEnable(GL_DEPTH_TEST);
+    }
+}

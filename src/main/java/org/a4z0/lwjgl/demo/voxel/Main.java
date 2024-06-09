@@ -1,60 +1,36 @@
 package org.a4z0.lwjgl.demo.voxel;
 
-import org.a4z0.lwjgl.demo.voxel.camera.PerspectiveCamera;
-import org.a4z0.lwjgl.demo.voxel.level.chunk.ChunkProvider;
-import org.a4z0.lwjgl.demo.voxel.level.chunk.InternalChunkProvider;
-import org.a4z0.lwjgl.demo.voxel.entity.EntityPlayer;
-import org.a4z0.lwjgl.demo.voxel.gl.input.Input;
-import org.a4z0.lwjgl.demo.voxel.gl.render.OutlineRenderer;
-import org.a4z0.lwjgl.demo.voxel.gl.shader.pre.VGShaders;
-import org.a4z0.lwjgl.demo.voxel.level.chunk.layer.ChunkLayer;
-import org.a4z0.lwjgl.demo.voxel.level.chunk.layer.ChunkLayers;
-import org.a4z0.lwjgl.demo.voxel.level.InternalLevel;
-import org.a4z0.lwjgl.demo.voxel.math.Location;
-import org.a4z0.lwjgl.demo.voxel.math.Vector3f;
-import org.joml.Matrix4f;
+import org.a4z0.lwjgl.demo.voxel.chunk.Chunk;
+import org.a4z0.lwjgl.demo.voxel.layer.ChunkRender;
+import org.a4z0.lwjgl.demo.voxel.level.Level;
+import org.a4z0.lwjgl.demo.voxel.legacy.done.camera.PerspectiveCamera;
+import org.a4z0.lwjgl.demo.voxel.font.GLFont;
+import org.a4z0.lwjgl.demo.voxel.level.server.LevelServer;
+import org.a4z0.lwjgl.demo.voxel.math.AABBf;
+import org.a4z0.lwjgl.demo.voxel.render.renderer.outline.OutlineRenderer;
+import org.a4z0.lwjgl.demo.voxel.render.shader.pre.VGShaders;
+import org.a4z0.lwjgl.demo.voxel.legacy.util.Input;
 import org.lwjgl.opengl.GL;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.glLineWidth;
 
-public class Main {
+public final class Main {
 
     public static long GL_WINDOW;
+    public static int GL_WINDOW_WIDTH = 800, GL_WINDOW_HEIGHT = 600;
 
-    public static int GL_WINDOW_WIDTH = 800;
-    public static int GL_WINDOW_HEIGHT = 600;
+    public static final boolean GL_VSYNC = false;
 
-    public static boolean GL_VSYNC = false;
+    public static boolean PAUSED;
+    public static boolean CLOSE;
 
-    @Deprecated
-    static OutlineRenderer OUTLINE_RENDERER;
+    public static OutlineRenderer OUTLINE_RENDERER;
+    public static GLFont GL_FONT;
 
-    @Deprecated
-    static ChunkProvider TEST_CHUNK_PROVIDER = new InternalChunkProvider();
-
-    @Deprecated
-    public static InternalLevel TEST_LEVEL = new InternalLevel(0L, TEST_CHUNK_PROVIDER);
-
-    @Deprecated
-    static List<ChunkLayer> TEST_LAYERS = new ArrayList<>();
-
-    static {
-        Random R = new Random();
-
-        for(int x = -16; x < 32; x++) {
-            for(int y = 0; y < 16; y++) {
-                for(int z = -16; z < 32; z++) {
-                    TEST_LEVEL.getBlockAt(x, y, z).setColor(R.nextInt(255) + 1, R.nextInt(255) + 1, R.nextInt(255) + 1);
-                }
-            }
-        }
-    }
+    public static Level LEVEL;
+    public static Chunk CHUNK;
+    public static ChunkRender[] CHUNK_RENDER_ARRAY = new ChunkRender[8];
 
     public static void main(String[] args) {
         if(!glfwInit())
@@ -75,24 +51,24 @@ public class Main {
 
         GL.createCapabilities();
 
-        // Loaders
+        System.out.println("[Game]: -> \"Pre.Load\".");
+
         VGShaders.init();
 
-        OUTLINE_RENDERER = new OutlineRenderer();
+        GL_FONT = GLFont.create("assets/font/minecraft.ttf", 16);
 
-        Game.getInstance().setPlayerCamera(new PerspectiveCamera());
-        Game.getInstance().setPlayer(new EntityPlayer("A4Z0", TEST_LEVEL, 0f, 60f, 0f));
-
+        // TODO: Handle After Load.
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glClearColor(0f, 0f, 0f, 1.0f);
         glEnable(GL_DEPTH_TEST);
         glClearDepth(1f);
         glDepthFunc(GL_LEQUAL);
-        /*glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);*/
+        // glEnable(GL_CULL_FACE);
+        // glCullFace(GL_BACK);
         glLineWidth(1f);
 
+        //noinspection resource
         glfwSetFramebufferSizeCallback(GL_WINDOW, (window, width, height) -> {
             glViewport(0, 0, GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
 
@@ -100,61 +76,89 @@ public class Main {
             GL_WINDOW_HEIGHT = height;
         });
 
-        glfwSetInputMode(GL_WINDOW, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPosCallback(GL_WINDOW, (window, x, y) -> {
-            Game.getInstance().tickPlayerDir((float) x, (float) y);
-        });
+        // Listen for Mouse.
+        glfwSetCursorPosCallback(GL_WINDOW, (window, x, y) -> Game.onMouse(x, y));
 
-        while(!glfwWindowShouldClose(GL_WINDOW)) {
+        OUTLINE_RENDERER = new OutlineRenderer();
+
+        System.out.println("[Game]: -> \"Post.Load\".");
+
+        LEVEL = new LevelServer(null, null, null, 0L);
+        CHUNK = LEVEL.getChunkAt(0, 0, 0);
+        CHUNK.load();
+
+        CHUNK_RENDER_ARRAY[0] = new ChunkRender(CHUNK, 0, 0, 0, 256,     16, 256);
+        CHUNK_RENDER_ARRAY[1] = new ChunkRender(CHUNK, 32, 0, 32, 256,   16, 256);
+        CHUNK_RENDER_ARRAY[2] = new ChunkRender(CHUNK, 48, 0, 48, 256,   16, 256);
+        CHUNK_RENDER_ARRAY[3] = new ChunkRender(CHUNK, 64, 0, 64, 256,   16, 256);
+        CHUNK_RENDER_ARRAY[4] = new ChunkRender(CHUNK, 96, 0, 96, 256,   16, 256);
+        CHUNK_RENDER_ARRAY[5] = new ChunkRender(CHUNK, 128, 0, 128, 256, 16, 256);
+        CHUNK_RENDER_ARRAY[6] = new ChunkRender(CHUNK, 160, 0, 160, 256, 16, 256);
+        CHUNK_RENDER_ARRAY[7] = new ChunkRender(CHUNK, 192, 0, 192, 256, 16, 256);
+
+        Render render = new Render();
+
+        while(!glfwWindowShouldClose(GL_WINDOW) && !CLOSE) {
             glViewport(0, 0, GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
             glClear(GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
             glClearColor(0.6f, 0.8f, 1f, 1);
 
             Input.update();
+
             glfwPollEvents();
 
-            // Refresh
+            // Listen for Keyboard.
+            //Game.onKeyboard();
+
+            if(!PAUSED) {
+                Game.LEVEL_SERVER.tick();
+
+                //if(TimeTicker.FPS_60.get()) {
+                    Game.PLAYER.tick();
+                    glfwSetWindowTitle(GL_WINDOW, "Ground: " + Game.PLAYER.isOnGround());
+                //}
+            }
+
             if(Input.isKeyPressed(GLFW_KEY_R))
-                for(ChunkLayers layer : Game.LAYERS)
-                    for(ChunkLayer layerLayer : layer.getLayers())
-                        layerLayer.delete(true);
+                for(ChunkRender chunkRender : CHUNK_RENDER_ARRAY)
+                    chunkRender.delete(true);
 
-            // Game Tick.
-            Game.getInstance().tick();
+            render.render();
 
-            Matrix4f Projection = Game.getInstance().getPlayerCamera().getProjection();
-            Matrix4f View = Game.getInstance().getPlayerCamera().getView();
+            AABBf SIXTEEN = new AABBf(0.5f, 0.5f, 0.5f).subtract(0.5f, 0.5f, 0.5f);
 
-            VGShaders.VOXEL_SHADER_PROGRAM.bind();
-            VGShaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_projection", Projection);
-            VGShaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_view", View);
-
-            // Game Renderer
-            Game.getInstance().render();
-
-            VGShaders.VOXEL_SHADER_PROGRAM.unbind();
-
-            VGShaders.OUTLINE_SHADER_PROGRAM.bind();
-            VGShaders.OUTLINE_SHADER_PROGRAM.setUniform4fv("camera_projection", Projection);
-            VGShaders.OUTLINE_SHADER_PROGRAM.setUniform4fv("camera_view", View);
-
-            Location playerPos = Game.getInstance().getPlayer().getLocation();
-            Vector3f center = Game.getInstance().getPlayer().getAABB().getCenter().add(playerPos.getPosition()).subtract(0.5f, 0.5f, 0.5f);
-
-            OUTLINE_RENDERER.render(Game.getInstance().getPlayer().getAABB(), center.getX(), center.getY(), center.getZ(), 1f, 1f, 0f, 1f, 1f);
-
-            VGShaders.OUTLINE_SHADER_PROGRAM.unbind();
+            // North (Red)
+            OUTLINE_RENDERER.render(SIXTEEN.clone().add(1f, 0f, 0f), 0, 0, 0, 1f, 0f, 0f, 1f, 1f);
 
             glFlush();
             glfwSwapBuffers(GL_WINDOW);
         }
 
-        quit();
+        System.out.println("[Game]: -> \"Close\".");
+
+        glfwTerminate();
+        System.exit(0);
     }
 
-    public static void quit() {
-        glfwTerminate();
+    public static class Render {
 
-        System.exit(0);
+        public static final PerspectiveCamera CAMERA = new PerspectiveCamera();
+
+        public void render() {
+            CAMERA.getPosition().set(Game.PLAYER.getLocation()).add(0, 1, 0);
+            CAMERA.setPitch(Game.PLAYER.getLocation().getPitch());
+            CAMERA.setYaw(Game.PLAYER.getLocation().getYaw());
+
+            VGShaders.VOXEL_SHADER_PROGRAM.bind();
+            VGShaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_projection", CAMERA.getProjection());
+            VGShaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_view", CAMERA.getView());
+
+            for(ChunkRender CHUNK_RENDER : CHUNK_RENDER_ARRAY) {
+                CHUNK_RENDER.update();
+                CHUNK_RENDER.render();
+            }
+
+            VGShaders.VOXEL_SHADER_PROGRAM.unbind();
+        }
     }
 }
