@@ -9,8 +9,6 @@ import org.a4z0.lwjgl.demo.voxel.math.AABBfc;
 
 public interface Voxel {
 
-    AABBf VOXEL_AABB = new AABBf(0.03125f, 0.03125f, 0.03125f).subtract(0.03125f, 0.03125f, 0.03125f);
-
     /**
     * @return the {@link Voxel}'s {@link VoxelPosition Position}.
     */
@@ -72,7 +70,14 @@ public interface Voxel {
     void setColor(byte r, byte g, byte b, byte a);
 
     default AABBf $() {
-        return VOXEL_AABB.clone().add(this.getPosition().getX(), this.getPosition().getY(), this.getPosition().getZ());
+        return new AABBf(
+            this.getPosition().getX(),
+            this.getPosition().getY(),
+            this.getPosition().getZ(),
+            (0.0625f + this.getPosition().getX()),
+            (0.0625f + this.getPosition().getY()),
+            (0.0625f + this.getPosition().getZ())
+        );
     }
 
     /**
@@ -87,7 +92,7 @@ public interface Voxel {
         if(this.getColor() == 0)
             return false;
 
-        return this.$().intersects(AABB);
+        return AABB.intersects(this.$());
     }
 
     /**

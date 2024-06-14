@@ -12,7 +12,6 @@ import static org.lwjgl.glfw.GLFW.*;
 * ...
 */
 
-@Deprecated
 public final class Input {
 
     public static final boolean[] KEYS = new boolean[GLFW_KEY_LAST];

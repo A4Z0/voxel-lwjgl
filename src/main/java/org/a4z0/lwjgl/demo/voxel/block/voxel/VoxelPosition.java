@@ -78,4 +78,9 @@ public class VoxelPosition implements Position3fc {
     public int getIndex() {
         return (this.getRelativeY() << 8 | this.getRelativeZ()) << 8 | this.getRelativeX();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof VoxelPosition) && ((VoxelPosition) o).x == this.x && ((VoxelPosition) o).y == this.y && ((VoxelPosition) o).z == this.z;
+    }
 }

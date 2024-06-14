@@ -19,4 +19,14 @@ public interface Position3fc {
     */
 
     float getZ();
+
+    /**
+    * Checks if this {@link Position3fc} is equals to the given {@link Object}, false otherwise.
+    *
+    * @param o {@link Object} to be checked.
+    *
+    * @return true if equal, false otherwise.
+    */
+
+    boolean equals(Object o);
 }

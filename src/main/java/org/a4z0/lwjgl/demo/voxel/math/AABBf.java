@@ -202,7 +202,7 @@ public class AABBf implements AABBfc {
     }
 
     @Override
-    public AABBf divide(int divisor) {
+    public AABBf divide(float divisor) {
         return this.divide(divisor, divisor, divisor);
     }
 
@@ -241,17 +241,17 @@ public class AABBf implements AABBfc {
     }
 
     @Override
-    public boolean intersects(AABBic o) {
-        return (this.x1 <= o.getUpperX() && this.x2 >= o.getLowerX())
-            && (this.y1 <= o.getUpperY() && this.y2 >= o.getLowerY())
-            && (this.z1 <= o.getUpperZ() && this.z2 >= o.getLowerZ());
+    public boolean intersects(int x1, int y1, int z1, int x2, int y2, int z2) {
+        return (this.x1 <= x2 && this.x2 >= x1)
+            && (this.y1 <= y2 && this.y2 >= y1)
+            && (this.z1 <= z2 && this.z2 >= z1);
     }
 
     @Override
-    public boolean intersects(AABBfc o) {
-        return (this.x1 <= o.getUpperX() && this.x2 >= o.getLowerX())
-            && (this.y1 <= o.getUpperY() && this.y2 >= o.getLowerY())
-            && (this.z1 <= o.getUpperZ() && this.z2 >= o.getLowerZ());
+    public boolean intersects(float x1, float y1, float z1, float x2, float y2, float z2) {
+        return (this.x1 <= x2 && this.x2 >= x1)
+            && (this.y1 <= y2 && this.y2 >= y1)
+            && (this.z1 <= z2 && this.z2 >= z1);
     }
 
     @Override

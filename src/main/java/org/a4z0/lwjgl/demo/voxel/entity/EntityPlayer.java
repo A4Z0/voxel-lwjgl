@@ -20,18 +20,20 @@ public class EntityPlayer extends EntityLiving {
     public static final float DEFAULT_WALK_SPEED = 0.1f;
     public static final float DEFAULT_FLIGHT_SPEED = 0.1f;
 
-    public static final AABBf DEFAULT_PLAYER_BODY = new AABBf(0.5f, 1.0f, 0.5f).subtract(0.5f, 0.f, 0.5f);
+    public static final AABBf DEFAULT_PLAYER_BODY = new AABBf(0f, 0f, 0f, 1f, 2f, 1f);
 
-
-    protected boolean is_on_ground;
+    protected boolean GROUNDED;
     protected boolean is_flying;
+    protected boolean sprinting;
 
     private float vertical_speed_x;
     private float vertical_speed_z;
 
     private float horizontal_speed;
 
-    private float fallSpeed;
+    private float sprint_speed;
+
+    private float FALL_SPEED;
 
     /**
     * Construct a {@link EntityPlayer}.
@@ -96,7 +98,7 @@ public class EntityPlayer extends EntityLiving {
     */
 
     public boolean isOnGround() {
-        return this.is_on_ground;
+        return this.GROUNDED;
     }
 
     /**
@@ -108,13 +110,31 @@ public class EntityPlayer extends EntityLiving {
     }
 
     /**
-    * ...
+    * Sets if the {@link EntityPlayer} is flying.
     *
-    * @param flight ...
+    * @param flying Flying?
     */
 
-    public void setFlying(boolean flight) {
-        this.is_flying = flight;
+    public void setFlying(boolean flying) {
+        this.is_flying = flying;
+    }
+
+    /**
+    * @return true if sprinting, false otherwise.
+    */
+
+    public boolean isSprinting() {
+        return this.sprinting;
+    }
+
+    /**
+    * Sets if the {@link EntityPlayer} is sprinting.
+    *
+    * @param sprinting Sprinting?
+    */
+
+    public void setSprinting(boolean sprinting) {
+        this.sprinting = sprinting;
     }
 
     /**
@@ -161,10 +181,9 @@ public class EntityPlayer extends EntityLiving {
 
         tickInput();
         tickMovement();
-        tickGround();
-        tickGravity();
+        //tickGravity();
 
-        Main.OUTLINE_RENDERER.render(DEFAULT_PLAYER_BODY.clone().add(0, 1f, 0), 0, 0, 0, 1f, 1f, 1f, 1f, 1f);
+        Main.OUTLINE_RENDERER.render(DEFAULT_PLAYER_BODY.clone().add(this.getLocation()), 0, 0, 0, 1f, 1f, 1f, 1f, 1f);
 
         VGShaders.OUTLINE_SHADER_PROGRAM.unbind();
     }
@@ -173,106 +192,92 @@ public class EntityPlayer extends EntityLiving {
         float vertical_speed_x = 0;
         float vertical_speed_z = 0;
         float horizontal_speed = 0;
+        float sprint_speed = 1f;
 
+        // Walk
         if(Input.isKeyDown(GLFW_KEY_W))
-            vertical_speed_x += this.getWalkSpeed();
+            vertical_speed_x += 1f;
         if(Input.isKeyDown(GLFW_KEY_A))
-            vertical_speed_z += this.getWalkSpeed();
+            vertical_speed_z += 1f;
         if(Input.isKeyDown(GLFW_KEY_S))
-            vertical_speed_x -= this.getWalkSpeed();
+            vertical_speed_x -= 1f;
         if(Input.isKeyDown(GLFW_KEY_D))
-            vertical_speed_z -= this.getWalkSpeed();
-        if(Input.isKeyDown(GLFW_KEY_SPACE) && this.isFlying())
-            horizontal_speed += this.getFlightSpeed();
-        if(Input.isKeyDown(GLFW_KEY_LEFT_SHIFT) && this.isFlying())
-            horizontal_speed -= this.getFlightSpeed();
+            vertical_speed_z -= 1f;
+
+        // Fly
         if(Input.isKeyPressed(GLFW_KEY_F))
             this.setFlying(!this.is_flying);
+        if(Input.isKeyDown(GLFW_KEY_SPACE) && this.isFlying())
+            horizontal_speed += 1f;
+        if(Input.isKeyDown(GLFW_KEY_LEFT_SHIFT) && this.isFlying())
+            horizontal_speed -= 1f;
+
+        // Sprint
+        if(Input.isKeyDown(GLFW_KEY_LEFT_CONTROL))
+            sprint_speed = 2f;
 
         this.vertical_speed_x = vertical_speed_x;
         this.vertical_speed_z = vertical_speed_z;
         this.horizontal_speed = horizontal_speed;
+        this.sprint_speed = sprint_speed;
     }
 
     private void tickMovement() {
+        float vertical_speed_x = this.vertical_speed_x * sprint_speed * this.getWalkSpeed();
+        float vertical_speed_z = this.vertical_speed_z * sprint_speed * this.getWalkSpeed();
+        float horizontal_speed = this.horizontal_speed * sprint_speed * this.getFlightSpeed();
+
         float RADIANS = (float) Math.toRadians(this.getLocation().getYaw());
 
         float DIR_X = (float) Math.sin(-RADIANS);
         float DIR_Z = (float) Math.cos(RADIANS);
 
-        this.getLocation().add(DIR_X * this.vertical_speed_x, 0, DIR_Z * this.vertical_speed_x);
-        this.getLocation().add(DIR_Z * this.vertical_speed_z, 0, -DIR_X * this.vertical_speed_z);
-        this.getLocation().add(0, this.horizontal_speed, 0);
-    }
-
-    private void tickGround() {
-        AABBfc Body = DEFAULT_PLAYER_BODY.clone().add(this.getLocation()).subtract(0, 0.0625f, 0);
-
-        int MIN_X = (int) Math.floor(Body.getLowerX() / 0.0625f);
-        int MIN_Z = (int) Math.floor(Body.getLowerZ() / 0.0625f);
-        int MAX_X = (int) Math.floor(Body.getUpperX() / 0.0625f);
-        int MAX_Z = (int) Math.floor(Body.getUpperZ() / 0.0625f);
-
-        for(int x = MIN_X; x <= MAX_X; x++) {
-            for(int z = MIN_Z; z <= MAX_Z; z++) {
-                Voxel Voxel = Main.CHUNK.getVoxelAt(x, (int) Body.getLowerY(), z);
-
-                Main.OUTLINE_RENDERER.render(Voxel.$(), 0, 0, 0, 1f, 1f, 1f, 1f, 1f);
-
-                if(Voxel.intersects(Body.clone())) {
-                    this.is_on_ground = true;
-
-                    return;
-                }
-            }
-        }
-
-        this.is_on_ground = false;
+        this.getLocation().add(DIR_X * vertical_speed_x, 0, DIR_Z *  vertical_speed_x);
+        this.getLocation().add(DIR_Z * vertical_speed_z, 0, -DIR_X * vertical_speed_z);
+        this.getLocation().add(0, horizontal_speed, 0);
     }
 
     private void tickGravity() {
-        if(this.isOnGround() || this.isFlying()) {
-            this.fallSpeed = 0;
+        this.FALL_SPEED += GRAVITY_FORCE;
 
-            return;
+        float MAX_FALL_SPEED = 0.03125f;
+
+        float FALL_DISTANCE = Math.min(this.FALL_SPEED, MAX_FALL_SPEED);
+        float REMAINING_FALL_SPEED = FALL_DISTANCE;
+
+        while(REMAINING_FALL_SPEED > 0) {
+            if(this.checkGroundCollision()) {
+                float DISTANCE = Math.min(REMAINING_FALL_SPEED, 0.0625f);
+
+                this.getLocation().subtract(0, DISTANCE, 0);
+
+                if(this.checkGroundCollision()) {
+                    this.GROUNDED = true;
+                    this.FALL_SPEED = 0;
+
+                    return;
+                }
+
+                REMAINING_FALL_SPEED -= DISTANCE;
+            }
         }
 
-        this.fallSpeed += GRAVITY_FORCE;
-
-        this.getLocation().subtract(0, fallSpeed, 0);
+        this.GROUNDED = false;
     }
 
-    private void tickJump() {
-        /*if(this.is_on_ground) {
-            this.horizontal_speed = 0;
-        } else {
-            this.horizontal_speed += 0.01f;
+    private boolean checkGroundCollision() {
+        AABBfc CURRENT_BODY = DEFAULT_PLAYER_BODY.clone().add(this.getLocation()).divide(0.0625f);
 
-            AABBfc Body = DEFAULT_PLAYER_BODY.clone().add(this.location);
+        for(int x = (int) Math.floor(CURRENT_BODY.getLowerX()); x <= (int) Math.floor(CURRENT_BODY.getUpperX()); x++) {
+            for(int z = (int) Math.floor(CURRENT_BODY.getLowerZ()); z <= (int) Math.floor(CURRENT_BODY.getUpperZ()); z++) {
+                Voxel Voxel = Main.CHUNK.getVoxelAt(x, (int) (this.getLocation().getY() / 0.0625), z);
 
-            int minVoxelX = (int) Math.floor(Body.getLowerX() / 0.0625f);
-            int minVoxelZ = (int) Math.floor(Body.getLowerZ() / 0.0625f);
-            int maxVoxelX = (int) Math.ceil(Body.getUpperX() / 0.0625f);
-            int maxVoxelZ = (int) Math.ceil(Body.getUpperZ() / 0.0625f);
-
-            float newY = (this.location.getY() - this.horizontal_speed);
-            float diff = 0;
-
-            for(int x = minVoxelX; x <= maxVoxelX; x++) {
-                for(int z = minVoxelZ; z <= maxVoxelZ; z++) {
-                    for(int y = this.getLocation().getNearestY(); y > 0; y--) {
-                        Voxel Voxel = Main.CHUNK.getVoxelAt(x, y, z);
-
-                        if(Voxel.getColor() != 0 && Voxel.getPosition().getY() < newY) {
-                            diff = this.horizontal_speed - Voxel.getPosition().getY();
-
-                            break;
-                        }
-                    }
+                if(Voxel.intersects(CURRENT_BODY)) {
+                    return true;
                 }
             }
+        }
 
-            this.location.subtract(0, this.horizontal_speed - diff, 0);
-        }*/
+        return false;
     }
 }

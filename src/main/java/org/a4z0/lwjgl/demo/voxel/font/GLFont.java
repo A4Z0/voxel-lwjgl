@@ -1,9 +1,7 @@
 package org.a4z0.lwjgl.demo.voxel.font;
 
-import org.a4z0.lwjgl.demo.voxel.legacy.done.buffer.DynamicBuffer;
 import org.a4z0.lwjgl.demo.voxel.render.shader.pre.VGShaders;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

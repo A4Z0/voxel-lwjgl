@@ -3,7 +3,6 @@ package org.a4z0.lwjgl.demo.voxel.render.renderer.outline;
 import jdk.jfr.Experimental;
 import org.a4z0.lwjgl.demo.voxel.math.AABBfc;
 import org.a4z0.lwjgl.demo.voxel.render.shader.pre.VGShaders;
-import org.a4z0.lwjgl.demo.voxel.legacy.done.buffer.DynamicBuffer;
 import org.a4z0.lwjgl.demo.voxel.legacy.gl.vertex.VertexBuffer;
 import org.joml.Matrix4f;
 

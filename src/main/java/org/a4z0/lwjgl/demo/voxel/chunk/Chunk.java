@@ -1,6 +1,5 @@
 package org.a4z0.lwjgl.demo.voxel.chunk;
 
-import org.a4z0.lwjgl.demo.voxel.block.BlockState;
 import org.a4z0.lwjgl.demo.voxel.block.voxel.VoxelPosition;
 import org.a4z0.lwjgl.demo.voxel.chunk.generation.BasicGenerator;
 import org.a4z0.lwjgl.demo.voxel.level.Level;
@@ -126,7 +125,7 @@ public class Chunk {
                 if((x < 0 || x >= CHUNK_SIZE_X) || (y < 0 || y >= CHUNK_SIZE_Y) || (z < 0 || z >= CHUNK_SIZE_Z))
                     return;
 
-                COLOR_ARRAY[this.getPosition().getIndex()] = ((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
+                COLOR_ARRAY[this.getPosition().getIndex()] = (r & 0xFF) | ((g & 0xFF) << 8) | ((b & 0xFF) << 16) | ((a & 0xFF) << 24);
             }
 
             @Override

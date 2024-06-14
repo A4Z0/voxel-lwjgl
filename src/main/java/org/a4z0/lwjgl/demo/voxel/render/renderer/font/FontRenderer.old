@@ -2,7 +2,7 @@ package org.a4z0.lwjgl.demo.voxel.render.renderer.font;
 
 import org.a4z0.lwjgl.demo.voxel.font.GLFont;
 import org.a4z0.lwjgl.demo.voxel.font.Image;
-import org.a4z0.lwjgl.demo.voxel.legacy.done.buffer.DynamicBuffer;
+import org.a4z0.lwjgl.demo.voxel.buffer.DynamicBuffer;
 import org.a4z0.lwjgl.demo.voxel.legacy.gl.vertex.VertexArrayObject;
 import org.a4z0.lwjgl.demo.voxel.legacy.gl.vertex.VertexBufferObject;
 import org.a4z0.lwjgl.demo.voxel.render.shader.pre.VGShaders;

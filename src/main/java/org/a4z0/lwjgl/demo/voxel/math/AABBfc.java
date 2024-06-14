@@ -266,7 +266,7 @@ public interface AABBfc extends Cloneable {
     * @return this {@link AABBfc}.
     */
 
-    AABBfc divide(int divisor);
+    AABBfc divide(float divisor);
 
     /**
     * Performs a division by dividing all axes by a {@link Vector3fc}.
@@ -348,7 +348,24 @@ public interface AABBfc extends Cloneable {
     * @return true if it intersects, false otherwise.
     */
 
-    boolean intersects(AABBic o);
+    default boolean intersects(AABBic o) {
+        return this.intersects(o.getLowerX(), o.getLowerY(), o.getLowerZ(), o.getUpperX(), o.getUpperY(), o.getUpperZ());
+    }
+
+    /**
+    * Checks if this {@link AABBfc} intersects the axes.
+    *
+    * @param x1 Minimum X-Axis.
+    * @param y1 Minimum Y-Axis.
+    * @param z1 Minimum Z-Axis.
+    * @param x2 Maximum X-Axis.
+    * @param y2 Maximum Y-Axis.
+    * @param z2 Maximum Z-Axis.
+    *
+    * @return true if it intersects, false otherwise.
+    */
+
+    boolean intersects(int x1, int y1, int z1, int x2, int y2, int z2);
 
     /**
     * Checks if this {@link AABBfc} intersects the other.
@@ -358,7 +375,24 @@ public interface AABBfc extends Cloneable {
     * @return true if it intersects, false otherwise.
     */
 
-    boolean intersects(AABBfc o);
+    default boolean intersects(AABBfc o) {
+        return this.intersects(o.getLowerX(), o.getLowerY(), o.getLowerZ(), o.getUpperX(), o.getUpperY(), o.getUpperZ());
+    }
+
+    /**
+    * Checks if this {@link AABBfc} intersects the axes.
+    *
+    * @param x1 Minimum X-Axis.
+    * @param y1 Minimum Y-Axis.
+    * @param z1 Minimum Z-Axis.
+    * @param x2 Maximum X-Axis.
+    * @param y2 Maximum Y-Axis.
+    * @param z2 Maximum Z-Axis.
+    *
+    * @return true if it intersects, false otherwise.
+    */
+
+    boolean intersects(float x1, float y1, float z1, float x2, float y2, float z2);
 
     /**
     * Checks if this {@link AABBfc} is equals to the given {@link Object}, false otherwise.

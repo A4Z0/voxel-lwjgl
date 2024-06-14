@@ -1,7 +1,7 @@
 package org.a4z0.lwjgl.demo.voxel;
 
 import org.a4z0.lwjgl.demo.voxel.chunk.Chunk;
-import org.a4z0.lwjgl.demo.voxel.layer.ChunkRender;
+import org.a4z0.lwjgl.demo.voxel.layer.ChunkLayer;
 import org.a4z0.lwjgl.demo.voxel.level.Level;
 import org.a4z0.lwjgl.demo.voxel.legacy.done.camera.PerspectiveCamera;
 import org.a4z0.lwjgl.demo.voxel.font.GLFont;
@@ -30,7 +30,7 @@ public final class Main {
 
     public static Level LEVEL;
     public static Chunk CHUNK;
-    public static ChunkRender[] CHUNK_RENDER_ARRAY = new ChunkRender[8];
+    public static ChunkLayer[] CHUNK_RENDER_ARRAY = new ChunkLayer[1];
 
     public static void main(String[] args) {
         if(!glfwInit())
@@ -87,14 +87,7 @@ public final class Main {
         CHUNK = LEVEL.getChunkAt(0, 0, 0);
         CHUNK.load();
 
-        CHUNK_RENDER_ARRAY[0] = new ChunkRender(CHUNK, 0, 0, 0, 256,     16, 256);
-        CHUNK_RENDER_ARRAY[1] = new ChunkRender(CHUNK, 32, 0, 32, 256,   16, 256);
-        CHUNK_RENDER_ARRAY[2] = new ChunkRender(CHUNK, 48, 0, 48, 256,   16, 256);
-        CHUNK_RENDER_ARRAY[3] = new ChunkRender(CHUNK, 64, 0, 64, 256,   16, 256);
-        CHUNK_RENDER_ARRAY[4] = new ChunkRender(CHUNK, 96, 0, 96, 256,   16, 256);
-        CHUNK_RENDER_ARRAY[5] = new ChunkRender(CHUNK, 128, 0, 128, 256, 16, 256);
-        CHUNK_RENDER_ARRAY[6] = new ChunkRender(CHUNK, 160, 0, 160, 256, 16, 256);
-        CHUNK_RENDER_ARRAY[7] = new ChunkRender(CHUNK, 192, 0, 192, 256, 16, 256);
+        CHUNK_RENDER_ARRAY[0] = new ChunkLayer(CHUNK);
 
         Render render = new Render();
 
@@ -120,7 +113,7 @@ public final class Main {
             }
 
             if(Input.isKeyPressed(GLFW_KEY_R))
-                for(ChunkRender chunkRender : CHUNK_RENDER_ARRAY)
+                for(ChunkLayer chunkRender : CHUNK_RENDER_ARRAY)
                     chunkRender.delete(true);
 
             render.render();
@@ -145,7 +138,7 @@ public final class Main {
         public static final PerspectiveCamera CAMERA = new PerspectiveCamera();
 
         public void render() {
-            CAMERA.getPosition().set(Game.PLAYER.getLocation()).add(0, 1, 0);
+            CAMERA.getPosition().set(Game.PLAYER.getLocation()).add(0.5f, 2f, 0.5f);
             CAMERA.setPitch(Game.PLAYER.getLocation().getPitch());
             CAMERA.setYaw(Game.PLAYER.getLocation().getYaw());
 
@@ -153,9 +146,8 @@ public final class Main {
             VGShaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_projection", CAMERA.getProjection());
             VGShaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_view", CAMERA.getView());
 
-            for(ChunkRender CHUNK_RENDER : CHUNK_RENDER_ARRAY) {
-                CHUNK_RENDER.update();
-                CHUNK_RENDER.render();
+            for(ChunkLayer CHUNK_RENDER : CHUNK_RENDER_ARRAY) {
+                CHUNK_RENDER.render(true);
             }
 
             VGShaders.VOXEL_SHADER_PROGRAM.unbind();
