@@ -1,0 +1,12 @@
+{
+  "shaders": [
+    {
+      "type": "vertex",
+      "path": "glsl/voxel.vert"
+    },
+    {
+      "type": "fragment",
+      "path": "glsl/voxel.frag"
+    }
+  ]
+}

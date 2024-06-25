@@ -1,0 +1,12 @@
+{
+  "shaders": [
+    {
+      "type": "vertex",
+      "path": "glsl/outline.vert"
+    },
+    {
+      "type": "fragment",
+      "path": "glsl/outline.frag"
+    }
+  ]
+}
