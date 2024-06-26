@@ -136,7 +136,11 @@ public class Vector3i implements Vector3ic {
 
     @Override
     public int distance(int x, int y, int z) {
-        return (int) (Math.pow((this.x - x), 2) + Math.pow((this.y - y), 2) + Math.pow((this.z - z), 2));
+        int dx = this.x - x;
+        int dy = this.y - y;
+        int dz = this.z - z;
+
+        return (int) Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     @Override

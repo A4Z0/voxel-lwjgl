@@ -1,20 +1,24 @@
 package org.a4z0.lwjgl.demo.chunk;
 
-import org.a4z0.lwjgl.demo.entity.EntityPlayer;
+import org.a4z0.lwjgl.demo.Game;
 import org.a4z0.lwjgl.demo.level.Level;
 import org.a4z0.lwjgl.demo.level.Location;
 import org.a4z0.lwjgl.demo.server.Server;
+import org.a4z0.lwjgl.demo.util.Input;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_R;
 
 public class ChunkProvider {
 
     protected final Server server;
     protected final Level level;
 
-    protected final Map<Long, Chunk> cache = new HashMap<>();
+    protected final Map<Long, Chunk> Cached = new HashMap<>();
 
     /**
     * Construct a {@link ChunkProvider}.
@@ -45,27 +49,29 @@ public class ChunkProvider {
     }
 
     /**
-     *
-     * @param x
-     * @param y
-     * @param z
-     *
-     * @return
-     */
+    * Checks if a Chunk in a position exists.
+    *
+    * @param x X-Axis.
+    * @param y Y-Axis.
+    * @param z Z-Axis.
+    *
+    * @return true if it exists, false otherwise.
+    */
 
     public boolean exists(int x, int y, int z) {
         return this.exists(new ChunkPosition(x, y, z));
     }
 
     /**
-     *
-     * @param position
-     *
-     * @return
-     */
+    * ...
+    *
+    * @param position ...
+    *
+    * @return true if it exists, false otherwise.
+    */
 
     public boolean exists(ChunkPosition position) {
-        return this.cache.containsKey(position.getIndex());
+        return this.Cached.containsKey(position.getIndex());
     }
 
     /**
@@ -91,7 +97,7 @@ public class ChunkProvider {
     */
 
     public Chunk provide(ChunkPosition position) {
-        return this.cache.computeIfAbsent(position.getIndex(), (_ignored) -> new Chunk(this.level, position));
+        return this.Cached.computeIfAbsent(position.getIndex(), (_ignored) -> new Chunk(this.level, position));
     }
 
     /**
@@ -129,7 +135,7 @@ public class ChunkProvider {
     */
 
     public Optional<Chunk> remove(ChunkPosition position) {
-        return Optional.of(this.cache.remove(position.getIndex()));
+        return Optional.of(this.Cached.remove(position.getIndex()));
     }
 
     /**
@@ -137,34 +143,21 @@ public class ChunkProvider {
     */
 
     public void tick() {
-        for(EntityPlayer player : this.server.getPlayers()) {
-            Location playerLoc = player.getLocation().clone();
+        /*Location playerLoc = Game.PLAYER.getLocation().clone();
 
-            for(int x = (int) playerLoc.getX() - 16; x < (int) playerLoc.getX() + 16; x++) {
-                for(int y = (int) playerLoc.getY() - 16; y < (int) playerLoc.getY() + 16; y++) {
-                    for(int z = (int) playerLoc.getZ() - 16; z < (int) playerLoc.getZ() + 16; z++) {
-                        Chunk playerChunk = this.provide(x >> 4, y >> 4, z >> 4);
+        for(int x = (int) playerLoc.getX() - 16; x < (int) playerLoc.getX() + 16; x++) {
+            for(int y = (int) playerLoc.getY() - 16; y < (int) playerLoc.getY() + 16; y++) {
+                for(int z = (int) playerLoc.getZ() - 16; z < (int) playerLoc.getZ() + 16; z++) {
+                    Chunk playerChunk = this.provide(x >> 4, y >> 4, z >> 4);
 
-                        if(!playerChunk.isLoaded())
-                            playerChunk.load(true);
+                    if(!playerChunk.isLoaded()) {
+                        CompletableFuture.runAsync(() -> playerChunk.load(true));
+                    }
 
-                        playerChunk.getLayer().render(true);
+                    if(playerChunk.isLoaded()) {
+                        playerChunk.getLayer().render();
                     }
                 }
-            }
-        }
-
-        /*for(Chunk chunk : this.cache.values()) {
-            boolean isVisible = false;
-
-            for(EntityPlayer player : this.server.getPlayers()) {
-                if(player.getLocation().distance(chunk.getPosition().getX(), chunk.getPosition().getY(), chunk.getPosition().getZ()) < 32) {
-                    isVisible = true;
-                }
-            }
-
-            if(!isVisible) {
-                this.remove(chunk).ifPresent(Chunk::unload);
             }
         }*/
     }

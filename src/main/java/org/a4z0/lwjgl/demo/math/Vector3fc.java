@@ -223,9 +223,9 @@ public interface Vector3fc extends Cloneable {
     float distance(float x, float y, float z);
 
     /**
-    * Checks if this {@link Vector3fc} is equals to the given {@link Object}, false otherwise.
+    * Checks if this {@link Vector3fc} is equals to the given {@link Object}.
     *
-    * @param o {@link Object} to be checked.
+    * @param o {@link Object} to be compared.
     *
     * @return true if equal, false otherwise.
     */

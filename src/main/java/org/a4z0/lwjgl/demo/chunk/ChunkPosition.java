@@ -22,17 +22,17 @@ public class ChunkPosition implements Position3ic {
 
     @Override
     public int getX() {
-        return (this.x << 4) * 16;
+        return this.x * 16;
     }
 
     @Override
     public int getY() {
-        return (this.y << 4) * 16;
+        return this.y * 16;
     }
 
     @Override
     public int getZ() {
-        return (this.z << 4) * 16;
+        return this.z * 16;
     }
 
     /**

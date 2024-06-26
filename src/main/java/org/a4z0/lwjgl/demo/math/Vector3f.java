@@ -136,7 +136,11 @@ public class Vector3f implements Vector3fc {
 
     @Override
     public float distance(float x, float y, float z) {
-        return (float) (Math.pow((this.x - x), 2) + Math.pow((this.y - y), 2) + Math.pow((this.z - z), 2));
+        float dx = this.x - x;
+        float dy = this.y - y;
+        float dz = this.z - z;
+
+        return (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     @Override

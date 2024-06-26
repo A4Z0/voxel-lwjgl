@@ -223,9 +223,9 @@ public interface Vector3ic extends Cloneable {
     int distance(int x, int y, int z);
 
     /**
-    * Checks if this {@link Vector3ic} is equals to the given {@link Object}, false otherwise.
+    * Checks if this {@link Vector3ic} is equals to the given {@link Object}.
     *
-    * @param o {@link Object} to be checked.
+    * @param o {@link Object} to be compared.
     *
     * @return true if equal, false otherwise.
     */

@@ -1,6 +1,5 @@
 package org.a4z0.lwjgl.demo.chunk;
 
-import org.a4z0.lwjgl.demo.layer.ChunkLayer;
 import org.a4z0.lwjgl.demo.level.Level;
 import org.a4z0.lwjgl.demo.voxel.Voxel;
 import org.a4z0.lwjgl.demo.voxel.VoxelPosition;
@@ -16,14 +15,16 @@ public class Chunk {
     protected final Level level;
     protected final ChunkPosition position;
 
-    protected boolean isLoaded;
+    protected final int[] Palette = new int[CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z];
 
-    protected final int[] palette = new int[CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z];
-    protected final ChunkLayer layer;
+    protected boolean Loaded;
+
+    protected Layers Layers = new Layers(this);
 
     /**
     * Construct a {@link Chunk}.
     *
+    * @param level {@link Level} this {@link Chunk} is at.
     * @param x X-Axis.
     * @param y Y-Axis.
     * @param z Z-Axis.
@@ -36,17 +37,17 @@ public class Chunk {
     /**
     * Construct a {@link Chunk}.
     *
-    * @param position ...
+    * @param level {@link Level} this {@link Chunk} is at.
+    * @param position {@link ChunkPosition Position}.
     */
 
     public Chunk(Level level, ChunkPosition position) {
         this.level = level;
         this.position = position;
-        this.layer = new ChunkLayer(this);
     }
 
     /**
-    * @return the {@link Level} this {@link Chunk} is in.
+    * @return the {@link Level}.
     */
 
     public Level getLevel() {
@@ -54,15 +55,16 @@ public class Chunk {
     }
 
     /**
-    * @return the Position.
+    * @return the {@link ChunkPosition Position}.
     */
 
     public ChunkPosition getPosition() {
         return this.position;
     }
 
-    public ChunkLayer getLayer() {
-        return this.layer;
+    @Deprecated
+    public Layers getLayers() {
+        return this.Layers;
     }
 
     /**
@@ -80,7 +82,7 @@ public class Chunk {
 
             @Override
             public VoxelPosition getPosition() {
-                return new VoxelPosition(x, y, z);
+                return new VoxelPosition(x + ((Chunk.this.getPosition().getX() >> 4) * 256), y + ((Chunk.this.getPosition().getY() >> 4) * 256), z + ((Chunk.this.getPosition().getZ() >> 4) * 256));
             }
 
             @Override
@@ -88,7 +90,7 @@ public class Chunk {
                 if((x < 0 || x >= CHUNK_SIZE_X) || (y < 0 || y >= CHUNK_SIZE_Y) || (z < 0 || z >= CHUNK_SIZE_Z))
                     return 0;
 
-                return palette[this.getPosition().getIndex()];
+                return Palette[this.getPosition().getIndex()];
             }
 
             @Override
@@ -96,7 +98,7 @@ public class Chunk {
                 if((x < 0 || x >= CHUNK_SIZE_X) || (y < 0 || y >= CHUNK_SIZE_Y) || (z < 0 || z >= CHUNK_SIZE_Z))
                     return;
 
-                palette[this.getPosition().getIndex()] = (r & 0xFF) | ((g & 0xFF) << 8) | ((b & 0xFF) << 16) | ((a & 0xFF) << 24);
+                Palette[this.getPosition().getIndex()] = (r & 0xFF) | ((g & 0xFF) << 8) | ((b & 0xFF) << 16) | ((a & 0xFF) << 24);
             }
 
             @Override
@@ -136,7 +138,7 @@ public class Chunk {
     */
 
     public boolean isLoaded() {
-        return this.isLoaded;
+        return this.Loaded;
     }
 
     /**
@@ -158,19 +160,24 @@ public class Chunk {
     */
 
     public boolean load(boolean g) {
-        this.isLoaded = true;
+        if(this.isLoaded())
+            return false;
+
+        this.Loaded = true;
 
         if(g) {
             Random r = new Random();
 
-            for(int x = 0; x < 16; x++) {
-                for (int y = 0; y < 16; y++) {
-                    for (int z = 0; z < 16; z++) {
+            for(int x = 0; x < 256; x++) {
+                for(int y = 0; y < 256; y++) {
+                    for(int z = 0; z < 256; z++) {
                         this.getVoxelAt(x, y, z).setColor(r.nextInt(255), r.nextInt(255), r.nextInt(255));
                     }
                 }
             }
         }
+
+        System.out.println("[Chunk]: Loaded!");
 
         return true;
     }
@@ -194,7 +201,10 @@ public class Chunk {
     */
 
     public boolean unload(boolean l) {
-        this.isLoaded = false;
+        if(!this.isLoaded())
+            return false;
+
+        System.out.println("[Chunk]: Unloaded!");
 
         return true;
     }

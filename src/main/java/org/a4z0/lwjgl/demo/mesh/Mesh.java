@@ -54,13 +54,13 @@ public class Mesh {
                                 if(Voxel.getWest().getColor() != 0)
                                     break;
 
-                                FaceGenerator.create(buffer, Voxel.getColor()).build(Direction.WEST, Voxel.getPosition().getX(), Voxel.getPosition().getY(), Voxel.getPosition().getZ());;
+                                FaceGenerator.create(buffer, Voxel.getColor()).build(Direction.WEST, Voxel.getPosition().getX(), Voxel.getPosition().getY(), Voxel.getPosition().getZ());
                             }
                             case TOP -> {
                                 if(Voxel.getTop().getColor() != 0)
                                     break;
 
-                                FaceGenerator.create(buffer, Voxel.getColor()).build(Direction.TOP, Voxel.getPosition().getX(), Voxel.getPosition().getY(), Voxel.getPosition().getZ());;
+                                FaceGenerator.create(buffer, Voxel.getColor()).build(Direction.TOP, Voxel.getPosition().getX(), Voxel.getPosition().getY(), Voxel.getPosition().getZ());
                             }
                             case BOTTOM -> {
                                 if(Voxel.getBottom().getColor() != 0)

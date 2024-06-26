@@ -395,9 +395,9 @@ public interface AABBfc extends Cloneable {
     boolean intersects(float x1, float y1, float z1, float x2, float y2, float z2);
 
     /**
-    * Checks if this {@link AABBfc} is equals to the given {@link Object}, false otherwise.
+    * Checks if this {@link AABBfc} is equals to the given {@link Object}.
     *
-    * @param o {@link Object} to be checked.
+    * @param o {@link Object} to be compared.
     *
     * @return true if equal, false otherwise.
     */

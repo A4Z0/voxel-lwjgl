@@ -125,7 +125,10 @@ public class Vector2f implements Vector2fc {
 
     @Override
     public float distance(float x, float y) {
-        return (float) (Math.pow((this.x - x), 2) + Math.pow((this.y - y), 2));
+        float dx = this.x - x;
+        float dy = this.y - y;
+
+        return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
     @Override

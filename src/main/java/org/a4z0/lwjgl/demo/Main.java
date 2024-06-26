@@ -1,11 +1,11 @@
 package org.a4z0.lwjgl.demo;
 
 import org.a4z0.lwjgl.demo.chunk.Chunk;
-import org.a4z0.lwjgl.demo.layer.ChunkLayer;
-import org.a4z0.lwjgl.demo.render.renderer.outline.OutlineRenderer;
 import org.a4z0.lwjgl.demo.shader.Shaders;
 import org.a4z0.lwjgl.demo.util.Input;
 import org.lwjgl.opengl.GL;
+
+import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -19,8 +19,6 @@ public final class Main {
 
     public static boolean PAUSED;
     public static boolean CLOSE;
-
-    public static OutlineRenderer OUTLINE_RENDERER;
 
     public static void main(String[] args) {
         if(!glfwInit())
@@ -46,9 +44,19 @@ public final class Main {
         Shaders.init();
         Game.init();
 
-        Game.LEVEL.getChunkAt(0, 0, 0);
+        Chunk A = Game.LEVEL.getChunkAt(0, 0, 0);
+        Chunk B = Game.LEVEL.getChunkAt(256, 0, 256);
 
-        OUTLINE_RENDERER = new OutlineRenderer();
+        Random r = new Random();
+
+        for(int x = 0; x < 256; x++) {
+            for(int y = 0; y < 256; y++) {
+                for(int z = 0; z < 256; z++) {
+                    A.getVoxelAt(x, y, z).setColor(40, 40, 40);
+                    B.getVoxelAt(x, y, z).setColor(50 + r.nextInt(16), 40, 42 + r.nextInt(32));
+                }
+            }
+        }
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -86,12 +94,17 @@ public final class Main {
 
             if(Input.isKeyPressed(GLFW_KEY_P))
                 PAUSED = !PAUSED;
+            if(Input.isKeyPressed(GLFW_KEY_R)) {
+                A.getLayers().delete();
+                B.getLayers().delete();
+            }
 
             Shaders.VOXEL_SHADER_PROGRAM.bind();
             Shaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_projection", Game.CAMERA.getProjection());
             Shaders.VOXEL_SHADER_PROGRAM.setUniform4fv("camera_view", Game.CAMERA.getView());
 
-            Game.LEVEL.tick();
+            A.getLayers().render();
+            B.getLayers().render();
 
             Shaders.VOXEL_SHADER_PROGRAM.unbind();
 

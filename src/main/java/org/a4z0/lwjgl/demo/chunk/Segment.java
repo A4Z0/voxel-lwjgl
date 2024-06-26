@@ -1,6 +1,5 @@
-package org.a4z0.lwjgl.demo.layer;
+package org.a4z0.lwjgl.demo.chunk;
 
-import org.a4z0.lwjgl.demo.chunk.Chunk;
 import org.a4z0.lwjgl.demo.mesh.Mesh;
 import org.a4z0.lwjgl.demo.shader.Shaders;
 import org.a4z0.lwjgl.demo.util.ByteBuf;
@@ -15,11 +14,11 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
 
-public class ChunkLayer {
+public class Segment {
 
     private static final int ELEMENTS_SIZE = 3 + 1 + 1;
     private static final int ELEMENTS_STRIDE = ELEMENTS_SIZE * Float.BYTES;
-    private static final Matrix4f MATRIX_4_F = new Matrix4f().translate(0, 0, 0);
+    private static final Matrix4f MATRIX_4_F = new Matrix4f();
 
     private static final byte PRE_COMPUTE = 0x01;
     private static final byte COMPUTED = PRE_COMPUTE | 0x02;
@@ -38,32 +37,42 @@ public class ChunkLayer {
 
     protected Future<Void> f;
 
+    protected final int x1, x2;
+    protected final int y1, y2;
+    protected final int z1, z2;
+
     /**
-    * Construct a {@link ChunkLayer}.
+    * Construct a {@link Segment}.
     *
     * @param c ...
     */
 
-    public ChunkLayer(Chunk c) {
+    public Segment(Chunk c, int x1, int y1, int z1, int x2, int y2, int z2) {
         this.c = c;
         this.b = new ByteBuf();
         this.w = 0;
+        this.x1 = x1;
+        this.x2 = x2;
+        this.y1 = y1;
+        this.y2 = y2;
+        this.z1 = z1;
+        this.z2 = z2;
     }
 
     /**
-    * Computes this {@link ChunkLayer}.
+    * Computes this {@link Segment}.
     */
 
     protected void compute() {
         this.f = CompletableFuture
-            .runAsync(() -> Mesh.build(this.b, this.c, c.getPosition().getX(), c.getPosition().getY(), c.getPosition().getZ(), 255 + c.getPosition().getX(), 255 + c.getPosition().getY(), 255 + c.getPosition().getZ()))
+            .runAsync(() -> Mesh.build(this.b, this.c, this.x1, this.y1, this.z1, this.x2, this.y2, this.z2))
             .thenRun(() -> this.w |= COMPUTED);
 
         this.w |= PRE_COMPUTE;
     }
 
     /**
-    * Bakes this {@link ChunkLayer}.
+    * Bakes this {@link Segment}.
     */
 
     protected void bake() {
@@ -72,7 +81,7 @@ public class ChunkLayer {
 
         glBindVertexArray(this.a);
         glBindBuffer(GL_ARRAY_BUFFER, this.o);
-        glBufferData(GL_ARRAY_BUFFER, this.b.asByteBuffer(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, this.b.asByteBuffer(), GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, true, ELEMENTS_STRIDE, 0);
@@ -90,18 +99,16 @@ public class ChunkLayer {
     }
 
     /**
-    * Draws this {@link ChunkLayer}.
-    *
-    * @param w ...
+    * Draws this {@link Segment}.
     */
 
-    protected void draw(boolean w) {
+    protected void draw() {
         if(this.b.size() == 0)
             return;
 
         glBindVertexArray(this.a);
 
-        Shaders.VOXEL_SHADER_PROGRAM.setUniform4fv("transformation", MATRIX_4_F);
+        Shaders.VOXEL_SHADER_PROGRAM.setUniform4fv("transformation", MATRIX_4_F.translate(0, 0, 0));
 
         glDrawArrays(GL_TRIANGLES, 0, (this.b.size() / ELEMENTS_SIZE));
 
@@ -109,32 +116,22 @@ public class ChunkLayer {
     }
 
     /**
-    * Renders this {@link ChunkLayer}.
+    * Renders this {@link Segment}.
     */
 
     public void render() {
-        this.render(false);
-    }
-
-    /**
-    * Renders this {@link ChunkLayer}.
-    *
-    * @param w ...
-    */
-
-    public void render(boolean w) {
         switch (this.w) {
             case UNREADY ->
                 this.compute();
             case COMPUTED ->
                 this.bake();
             case READY_FOR_RENDERING ->
-                this.draw(w);
+                this.draw();
         }
     }
 
     /**
-    * Deletes this {@link ChunkLayer}.
+    * Deletes this {@link Segment}.
     */
 
     public void delete() {
@@ -142,7 +139,7 @@ public class ChunkLayer {
     }
 
     /**
-    * Deletes this {@link ChunkLayer}.
+    * Deletes this {@link Segment}.
     *
     * @param b ...
     */
