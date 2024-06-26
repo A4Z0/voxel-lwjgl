@@ -15,9 +15,9 @@ public class ChunkPosition implements Position3ic {
     */
 
     public ChunkPosition(int x, int y, int z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.x = x >> 8;
+        this.y = y >> 8;
+        this.z = z >> 8;
     }
 
     @Override
